@@ -4,6 +4,8 @@ using System.Text;
 
 public class CommandClass
 {
+    public string Name { get; set; }
+
     public void NotCommandMethod()
     {
     }

@@ -24,4 +24,17 @@ public static class CecilExtensions
             throw new WeavingException(string.Format("Property '{0}' could not be re-used because it is not the correct type. Expected '{1}'.", targetReference.Name, expectedType.Name));
         }
     }
+
+    public static FieldDefinition AddField(this TypeDefinition targetType, TypeReference fieldType, string fieldName)
+    {
+        var fieldDefinition = targetType.Fields.FirstOrDefault(x => x.Name == fieldName);
+        if (fieldDefinition != null)
+        {
+            fieldDefinition.ValidateIsOfType(fieldType);
+            return fieldDefinition;
+        }
+        fieldDefinition = new FieldDefinition(fieldName, FieldAttributes.Private, fieldType);
+        targetType.Fields.Add(fieldDefinition);
+        return fieldDefinition;
+    }
 }

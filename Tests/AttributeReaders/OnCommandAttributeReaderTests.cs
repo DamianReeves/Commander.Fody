@@ -34,7 +34,7 @@ public class OnCommandAttributeReaderTests
     }
 
     public class CommandClass
-    {
+    {        
         [OnCommand("TestCommand")]
         public void OnTestCommand()
         {
