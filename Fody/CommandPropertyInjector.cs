@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -14,8 +16,16 @@ public static class CommandPropertyInjector
         }        
         propertyDefinition = new PropertyDefinition(commandName, PropertyAttributes.HasDefault, propertyType);
         targetType.Properties.Add(propertyDefinition);
-        AddPropertyGetter(propertyDefinition);
+        var backingField = AddPropertyBackingField(propertyDefinition);
+        AddPropertyGetter(propertyDefinition, backingField:backingField);
+        AddPropertySetter(propertyDefinition, backingField:backingField);
         return propertyDefinition;
+    }
+
+    public static FieldDefinition AddPropertyBackingField(PropertyDefinition property)
+    {
+        var fieldName = string.Format("<{0}>k__BackingField", property.Name);
+        return property.DeclaringType.AddField(property.PropertyType, fieldName);
     }
 
     public static MethodDefinition AddPropertyGetter(
@@ -26,8 +36,7 @@ public static class CommandPropertyInjector
         if (backingField == null)
         {
             // TODO: Try and find existing friendly named backingFields first.
-            var fieldName = string.Format("<{0}>k__BackingField", property.Name);
-            backingField = property.DeclaringType.AddField(property.PropertyType, fieldName);
+            backingField = AddPropertyBackingField(property);
         }
 
         var methodName = "get_" + property.Name;
@@ -52,5 +61,35 @@ public static class CommandPropertyInjector
         property.GetMethod = getter;
         property.DeclaringType.Methods.Add(getter);
         return getter;
+    }
+
+    public static MethodDefinition AddPropertySetter(
+        PropertyDefinition property
+        , MethodAttributes methodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.NewSlot | MethodAttributes.Virtual
+        , FieldDefinition backingField = null)
+    {
+        if (backingField == null)
+        {
+            // TODO: Try and find existing friendly named backingFields first.
+            backingField = AddPropertyBackingField(property);
+        }
+
+        var methodName = "set_" + property.Name;
+        var setter = new MethodDefinition(methodName, methodAttributes, property.Module.TypeSystem.Void)
+        {
+            IsSetter = true,
+            Body = { InitLocals = true },
+        };
+        setter.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, property.PropertyType));
+        setter.Body.Instructions.Append(
+            Instruction.Create(OpCodes.Ldarg_0),
+            Instruction.Create(OpCodes.Ldarg_1),
+            Instruction.Create(OpCodes.Stfld, backingField),
+            Instruction.Create(OpCodes.Ret)
+        );
+
+        property.SetMethod = setter;
+        property.DeclaringType.Methods.Add(setter);
+        return setter;
     }
 }
