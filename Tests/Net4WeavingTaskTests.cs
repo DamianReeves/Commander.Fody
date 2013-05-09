@@ -8,7 +8,7 @@ public class Net4WeavingTaskTests : BaseTaskTests
 {
 
     public Net4WeavingTaskTests()
-        : base(@"AssemblyToProcess\AssemblyToProcessDotNet4.csproj", Console.WriteLine)
+        : base(@"TestAssemblies\AssemblyToProcess\AssemblyToProcessDotNet4.csproj", Console.WriteLine)
     {
     }    
 
