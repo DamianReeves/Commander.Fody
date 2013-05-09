@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fody", "Fody\Fody.csproj", "{D2B2DD97-8D91-4CD7-8820-C76FE5F20E71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcessDotNet4", "AssemblyToProcess\AssemblyToProcessDotNet4.csproj", "{6E7238AC-759B-40F6-97C8-7FC32554900E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{76DDAF2D-8652-4412-BD6B-1F2214589B1B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2B2DD97-8D91-4CD7-8820-C76FE5F20E71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2B2DD97-8D91-4CD7-8820-C76FE5F20E71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2B2DD97-8D91-4CD7-8820-C76FE5F20E71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2B2DD97-8D91-4CD7-8820-C76FE5F20E71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E7238AC-759B-40F6-97C8-7FC32554900E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E7238AC-759B-40F6-97C8-7FC32554900E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E7238AC-759B-40F6-97C8-7FC32554900E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E7238AC-759B-40F6-97C8-7FC32554900E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76DDAF2D-8652-4412-BD6B-1F2214589B1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76DDAF2D-8652-4412-BD6B-1F2214589B1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76DDAF2D-8652-4412-BD6B-1F2214589B1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76DDAF2D-8652-4412-BD6B-1F2214589B1B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
