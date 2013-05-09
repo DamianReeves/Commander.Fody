@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="AttributeFinder.cs" />
     <Compile Include="CecilExtensions.cs" />
+    <Compile Include="CommandInitializerInjector.cs" />
     <Compile Include="DelegateCommandFinder.cs" />
     <Compile Include="CommandPropertyInjector.cs" />
     <Compile Include="InstructionListExtensions.cs" />

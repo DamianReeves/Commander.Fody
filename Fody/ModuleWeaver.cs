@@ -18,8 +18,9 @@ public class ModuleWeaver
 
     public void Execute()
     {
-        var context = new ModuleWeavingContext(ModuleDefinition);
+        var context = new ModuleWeavingContext(ModuleDefinition, LogInfo);
         GatherCommandPointcuts(context);
+        AddCommandInitialization(context);
     }
 
     public void GatherCommandPointcuts(ModuleWeavingContext moduleContext)
@@ -80,5 +81,17 @@ public class ModuleWeaver
                 LogInfo(string.Format("Error while adding property {0} to {1}: {2}", commandName, type, ex));
             }
         }               
+    }
+
+    public void AddCommandInitialization(ModuleWeavingContext context)
+    {
+        foreach (var typeNode in context.WeavableTypes)
+        {
+            if (typeNode.ReferencedCommands.Any())
+            {
+                MethodDefinition initializeMethod;
+                typeNode.TypeDefinition.TryAddCommandInitializerMethod(out initializeMethod);
+            }
+        }
     }
 }

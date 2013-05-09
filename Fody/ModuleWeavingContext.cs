@@ -1,18 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 
 public class ModuleWeavingContext
 {
+    private readonly ModuleDefinition _moduleDefinition;
     private readonly WeaverCommonTypes _commonTypes;
     private readonly List<TypeDefinition> _allTypes;
     private readonly List<TypeNode> _weavableTypes;
+    private readonly Action<string> _logger;
 
-    public ModuleWeavingContext(ModuleDefinition moduleDefinition)
+    public ModuleWeavingContext(ModuleDefinition moduleDefinition, Action<string> logger)
     {
+        _moduleDefinition = moduleDefinition;
+        _logger = logger;
         _allTypes = moduleDefinition.GetTypes().Where(x => x.IsClass).ToList();
-        _commonTypes = new WeaverCommonTypes(moduleDefinition);
         _weavableTypes = new List<TypeNode>();
+        _commonTypes = new WeaverCommonTypes(this);           
     }
 
     public List<TypeDefinition> AllTypes
@@ -28,6 +33,16 @@ public class ModuleWeavingContext
     public List<TypeNode> WeavableTypes
     {
         get { return _weavableTypes; }
+    }
+
+    public ModuleDefinition ModuleDefinition
+    {
+        get { return _moduleDefinition; }
+    }
+
+    public Action<string> Logger
+    {
+        get { return _logger; }
     }
 
     public TypeWeavingContext GetTypeWeavingContext(TypeDefinition type)

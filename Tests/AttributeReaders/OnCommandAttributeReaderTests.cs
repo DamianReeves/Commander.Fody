@@ -25,7 +25,7 @@ public class OnCommandAttributeReaderTests
         };
 
         var type =  DefinitionFinder.FindType<CommandClass>();
-        var context = new ModuleWeavingContext(reader.ModuleDefinition);
+        var context = new ModuleWeavingContext(reader.ModuleDefinition, reader.LogInfo);
         reader.GatherCommandPointcuts(type, context);
 
         var onCommandLog = logs.Where(s => s.StartsWith("Found OnCommand method")).ToList();

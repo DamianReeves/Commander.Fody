@@ -6,12 +6,13 @@ using Mono.Cecil;
 public class WeaverCommonTypes
 {
     public readonly TypeReference ICommand;
-    public ModuleDefinition ModuleDefinition { get; private set; }    
+    public TypeReference DelegateCommand { get; set; }
+    public ModuleDefinition ModuleDefinition { get; private set; }
 
-    public WeaverCommonTypes(ModuleDefinition moduleDefinition)
+    public WeaverCommonTypes(ModuleWeavingContext moduleContext)
     {
-        ModuleDefinition = moduleDefinition;
-        var assemblyResolver = moduleDefinition.AssemblyResolver;
+        ModuleDefinition = moduleContext.ModuleDefinition;
+        var assemblyResolver = ModuleDefinition.AssemblyResolver;
         var msCoreLibDefinition = assemblyResolver.Resolve("mscorlib");
         var msCoreTypes = msCoreLibDefinition.MainModule.Types;
 
@@ -36,6 +37,12 @@ public class WeaverCommonTypes
         {
             var message = "Could not find type System.Windows.Input.ICommand.";
             throw new WeavingException(message);
+        }
+
+        TypeReference delegateCommandRef;
+        if (moduleContext.TryFindDelegateCommandType(out delegateCommandRef))
+        {
+            DelegateCommand = delegateCommandRef;
         }
     }
 

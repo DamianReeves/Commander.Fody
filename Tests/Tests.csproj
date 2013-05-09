@@ -64,6 +64,7 @@
     <Compile Include="AttributeReaders\OnCommandAttributeReaderTests.cs" />
     <Compile Include="Attributes\OnCommandAttribute.cs" />
     <Compile Include="BaseTaskTests.cs" />
+    <Compile Include="AssemblyWithDelegateCommandDotNet4Tests.cs" />
     <Compile Include="DefinitionFinder.cs" />
     <Compile Include="Net4WeavingTaskTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
