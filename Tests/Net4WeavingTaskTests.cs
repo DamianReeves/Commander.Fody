@@ -8,9 +8,8 @@ public class Net4WeavingTaskTests : BaseTaskTests
 {
 
     public Net4WeavingTaskTests()
-        : base(@"AssemblyToProcess\AssemblyToProcessDotNet4.csproj")
+        : base(@"AssemblyToProcess\AssemblyToProcessDotNet4.csproj", Console.WriteLine)
     {
-
     }    
 
     [Test]
@@ -20,7 +19,5 @@ public class Net4WeavingTaskTests : BaseTaskTests
         var type = instance.GetType();
         var testCommandProperty = type.Properties().Single(prop => prop.Name == "TestCommand");
         testCommandProperty.PropertyType.FullName.Should().Be("System.Windows.Input.ICommand");
-        //Action action = () => { var command = instance.TestCommand; };
-        //action.ShouldNotThrow();
     }
 }

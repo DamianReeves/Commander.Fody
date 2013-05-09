@@ -11,7 +11,7 @@ public class WeaverHelper
     string assemblyPath;
     public Assembly Assembly { get; set; }
 
-    public WeaverHelper(string projectPath)
+    public WeaverHelper(string projectPath, Action<string> logger = null )
     {
         this.projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\", projectPath));
 
@@ -30,6 +30,11 @@ public class WeaverHelper
             ModuleDefinition = moduleDefinition,
             AssemblyResolver = assemblyResolver
         };
+
+        if (logger != null)
+        {
+            weavingTask.LogInfo = logger;
+        }
 
         weavingTask.Execute();
             var writerParameters = new WriterParameters

@@ -1,25 +1,28 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using NUnit.Framework;
 
 public abstract class BaseTaskTests
 {
-    string projectPath;
+    private readonly string _projectPath;
+    private readonly Action<string> _logger;
     public Assembly Assembly;
 
-    protected BaseTaskTests(string projectPath)
+    protected BaseTaskTests(string projectPath, Action<string> logger = null)
     {
 
 #if (!DEBUG)
 
             projectPath = projectPath.Replace("Debug", "Release");
 #endif
-        this.projectPath = projectPath;
+        _projectPath = projectPath;
+        _logger = logger;
     }
 
     [TestFixtureSetUp]
     public void Setup()
     {
-        var weaverHelper = new WeaverHelper(projectPath);
+        var weaverHelper = new WeaverHelper(_projectPath, _logger);
         Assembly = weaverHelper.Assembly;
     }
 

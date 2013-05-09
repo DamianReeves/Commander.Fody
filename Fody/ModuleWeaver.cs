@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
@@ -15,23 +14,23 @@ public class ModuleWeaver
     public Action<string> LogInfo { get; set; }
     // An instance of Mono.Cecil.ModuleDefinition for processing
     public ModuleDefinition ModuleDefinition { get; set; }
-    public IAssemblyResolver AssemblyResolver { get; set; }
+    public IAssemblyResolver AssemblyResolver { get; set; }    
 
     public void Execute()
     {
-        var allTypes = ModuleDefinition.GetTypes().Where(x => x.IsClass).ToList();
-        ProcessTypes(allTypes);
+        var context = new WeavingContext(ModuleDefinition);
+        ProcessTypes(context);
     }
 
-    public void ProcessTypes(List<TypeDefinition> allTypes)
+    public void ProcessTypes(WeavingContext context)
     {
-        foreach (var type in allTypes)
+        foreach (var type in context.AllTypes)
         {
-            ProcessType(type);
+            ProcessType(type, context);
         }
     }
 
-    public void ProcessType(TypeDefinition typeDefinition)
+    public void ProcessType(TypeDefinition typeDefinition, WeavingContext context)
     {
         var onCommandMethods = typeDefinition.FindOnCommandMethods().ToList();
         if (!onCommandMethods.Any())
@@ -40,11 +39,11 @@ public class ModuleWeaver
         }
         foreach (var method in onCommandMethods)
         {
-            ProcessOnCommandMethod(method);
+            ProcessOnCommandMethod(method, context);
         }
     }
 
-    public void ProcessOnCommandMethod(MethodDefinition method)
+    public void ProcessOnCommandMethod(MethodDefinition method, WeavingContext context)
     {
         var onCommandAttributes = 
             method.CustomAttributes
@@ -60,7 +59,7 @@ public class ModuleWeaver
                                   , type.Name));
             try
             {
-                CommandPropertyInjector.AddProperty(ModuleDefinition.TypeSystem.Object, type, commandName);
+                CommandPropertyInjector.AddProperty(context.CommonTypes.ICommand, type, commandName);
             }
             catch (Exception ex)
             {
