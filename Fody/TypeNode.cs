@@ -5,9 +5,19 @@ public class TypeNode
 {
     public TypeNode()
     {        
-        Nodes = new List<TypeNode>();
+        //Nodes = new List<TypeNode>();
+        ReferencedCommands = new List<CommandData>();
+        InjectedCommands = new List<CommandData>();
     }
 
     public TypeDefinition TypeDefinition;
-    public List<TypeNode> Nodes;
+    public List<CommandData> ReferencedCommands;
+    public List<CommandData> InjectedCommands;
+}
+
+public class CommandData
+{
+    public PropertyDefinition CommandProperty;
+    public TypeReference DelegateCommandTypeReference;
+    public MethodReference DelegateCommandConstructorReference;
 }

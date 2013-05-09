@@ -58,14 +58,14 @@
   <ItemGroup>
     <Compile Include="AttributeFinder.cs" />
     <Compile Include="CecilExtensions.cs" />
-    <Compile Include="CommandFinder.cs" />
+    <Compile Include="DelegateCommandFinder.cs" />
     <Compile Include="CommandPropertyInjector.cs" />
     <Compile Include="InstructionListExtensions.cs" />
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeNode.cs" />
     <Compile Include="WeaverCommonTypes.cs" />
-    <Compile Include="WeavingContext.cs" />
+    <Compile Include="ModuleWeavingContext.cs" />
     <Compile Include="WeavingException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

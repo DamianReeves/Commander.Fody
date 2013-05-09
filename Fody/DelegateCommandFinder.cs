@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Mono.Cecil;
 
-public class CommandFinder
+public class DelegateCommandFinder
 {
-    public TypeReference ICommandInterfaceRef;
+    public TypeReference DelegateCommandReference;
     public List<TypeDefinition> AllTypes;
 
     public void Execute()

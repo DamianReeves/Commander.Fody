@@ -18,32 +18,34 @@ public class ModuleWeaver
 
     public void Execute()
     {
-        var context = new WeavingContext(ModuleDefinition);
-        ProcessTypes(context);
+        var context = new ModuleWeavingContext(ModuleDefinition);
+        GatherCommandPointcuts(context);
     }
 
-    public void ProcessTypes(WeavingContext context)
+    public void GatherCommandPointcuts(ModuleWeavingContext moduleContext)
     {
-        foreach (var type in context.AllTypes)
+        foreach (var type in moduleContext.AllTypes)
         {
-            ProcessType(type, context);
+            GatherCommandPointcuts(type, moduleContext);
         }
     }
 
-    public void ProcessType(TypeDefinition typeDefinition, WeavingContext context)
+    public void GatherCommandPointcuts(TypeDefinition typeDefinition, ModuleWeavingContext context)
     {
         var onCommandMethods = typeDefinition.FindOnCommandMethods().ToList();
         if (!onCommandMethods.Any())
         {
             return;
         }
+        var typeContext = context.GetTypeWeavingContext(typeDefinition);
+        context.WeavableTypes.Add(typeContext.Type);
         foreach (var method in onCommandMethods)
         {
-            ProcessOnCommandMethod(method, context);
+            ProcessOnCommandMethod(method, typeContext);
         }
     }
 
-    public void ProcessOnCommandMethod(MethodDefinition method, WeavingContext context)
+    public void ProcessOnCommandMethod(MethodDefinition method, TypeWeavingContext context)
     {
         var onCommandAttributes = 
             method.CustomAttributes
@@ -51,6 +53,7 @@ public class ModuleWeaver
                 .Where(attrib => attrib.HasConstructorArguments && attrib.ConstructorArguments.First().Type.Name == "String");
         var commandNames = onCommandAttributes.Select(attrib => attrib.ConstructorArguments.First().Value).OfType<string>();
         var type = method.DeclaringType;
+        var icommandTypeRef = context.ModuleContext.CommonTypes.ICommand;
         foreach (var commandName in commandNames)
         {
             LogInfo(string.Format("Found OnCommand method {0} for command {1} on type {2}"
@@ -59,7 +62,18 @@ public class ModuleWeaver
                                   , type.Name));
             try
             {
-                CommandPropertyInjector.AddProperty(context.CommonTypes.ICommand, type, commandName);
+                PropertyDefinition propertyDefinition;
+                if (context.Type.TypeDefinition.TryAddCommandProperty(icommandTypeRef, commandName, out propertyDefinition))
+                {
+                    var commandData = new CommandData {CommandProperty = propertyDefinition};
+                    context.Type.ReferencedCommands.Add(commandData);
+                    context.Type.InjectedCommands.Add(commandData);
+                }
+                else
+                {
+                    var commandData = new CommandData { CommandProperty = propertyDefinition };
+                    context.Type.ReferencedCommands.Add(commandData);
+                }
             }
             catch (Exception ex)
             {

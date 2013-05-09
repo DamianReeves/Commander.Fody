@@ -6,6 +6,23 @@ using Mono.Cecil.Cil;
 
 public static class CommandPropertyInjector
 {
+    public static bool TryAddCommandProperty(this TypeDefinition targetType, TypeReference propertyType, string commandName, out PropertyDefinition propertyDefinition)
+    {
+        propertyDefinition = targetType.Properties.FirstOrDefault(x => x.Name == commandName);
+        if (propertyDefinition != null)
+        {
+            propertyDefinition.ValidateIsOfType(propertyType);
+            return false;
+        }
+
+        propertyDefinition = new PropertyDefinition(commandName, PropertyAttributes.HasDefault, propertyType);
+        targetType.Properties.Add(propertyDefinition);
+        var backingField = AddPropertyBackingField(propertyDefinition);
+        AddPropertyGetter(propertyDefinition, backingField: backingField);
+        AddPropertySetter(propertyDefinition, backingField: backingField);
+        return true;
+    }
+
     public static PropertyDefinition AddProperty(TypeReference propertyType, TypeDefinition targetType, string commandName)
     {
         var propertyDefinition = targetType.Properties.FirstOrDefault(x => x.Name == commandName);
