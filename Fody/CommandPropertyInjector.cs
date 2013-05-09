@@ -31,22 +31,26 @@ public static class CommandPropertyInjector
         }
 
         var methodName = "get_" + property.Name;
-        var method = new MethodDefinition(methodName, methodAttributes, property.PropertyType)
+        var getter = new MethodDefinition(methodName, methodAttributes, property.PropertyType)
         {
             IsGetter = true,
-            IsPrivate = true
+            Body = {InitLocals = true},
         };
 
-        method.Body.Instructions.Append(
+        getter.Body.Variables.Add(new VariableDefinition(property.PropertyType));
+
+        var returnStart = Instruction.Create(OpCodes.Ldloc_0);
+        getter.Body.Instructions.Append(
             Instruction.Create(OpCodes.Ldarg_0),
             Instruction.Create(OpCodes.Ldfld, backingField),
             Instruction.Create(OpCodes.Stloc_0),
-            Instruction.Create(OpCodes.Ldloc_0),
+            Instruction.Create(OpCodes.Br_S, returnStart),
+            returnStart,
             Instruction.Create(OpCodes.Ret)
-        );
-
-        property.GetMethod = method;
-        property.DeclaringType.Methods.Add(method);
-        return method;
+        );        
+                
+        property.GetMethod = getter;
+        property.DeclaringType.Methods.Add(getter);
+        return getter;
     }
 }

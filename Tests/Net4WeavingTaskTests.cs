@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -13,10 +14,13 @@ public class Net4WeavingTaskTests : BaseTaskTests
     }    
 
     [Test]
-    public void Simple()
+    public void TestCommand_Should_Be_Injected()
     {
-        var instance = Assembly.GetInstance("CommandClass");
-        Action action = () => { var command = instance.TestCommand; };
-        action.ShouldNotThrow();
+        object instance = Assembly.GetInstance("CommandClass");
+        var type = instance.GetType();
+        var testCommandProperty = type.Properties().Single(prop => prop.Name == "TestCommand");
+        testCommandProperty.PropertyType.FullName.Should().Be("System.Windows.Input.ICommand");
+        //Action action = () => { var command = instance.TestCommand; };
+        //action.ShouldNotThrow();
     }
 }
