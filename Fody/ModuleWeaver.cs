@@ -58,6 +58,14 @@ public class ModuleWeaver
                                   , method
                                   , commandName
                                   , type.Name));
+            try
+            {
+                CommandPropertyInjector.AddProperty(ModuleDefinition.TypeSystem.Object, type, commandName);
+            }
+            catch (Exception ex)
+            {
+                LogInfo(string.Format("Error while adding property {0} to {1}: {2}", commandName, type, ex));
+            }
         }               
     }
 }

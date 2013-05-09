@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System;
+using FluentAssertions;
+using NUnit.Framework;
 
 [TestFixture]
 public class Net4WeavingTaskTests : BaseTaskTests
@@ -14,6 +16,7 @@ public class Net4WeavingTaskTests : BaseTaskTests
     public void Simple()
     {
         var instance = Assembly.GetInstance("CommandClass");
-        //DefinitionFinder.FindProperty(()=>instance.)
+        Action action = () => { var command = instance.TestCommand; };
+        action.ShouldNotThrow();
     }
 }
