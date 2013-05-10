@@ -2,10 +2,13 @@
 using System.Linq;
 using Mono.Cecil;
 
-internal static class AttributeFinder
+namespace Commander.Fody
 {
-    public static IEnumerable<MethodDefinition> FindOnCommandMethods(this TypeDefinition type)
+    internal static class AttributeFinder
     {
-        return type.Methods.Where(method => CecilExtensions.ContainsAttribute(method.CustomAttributes, "OnCommandAttribute"));
+        public static IEnumerable<MethodDefinition> FindOnCommandMethods(this TypeDefinition type)
+        {
+            return type.Methods.Where(method => CecilExtensions.ContainsAttribute(method.CustomAttributes, "OnCommandAttribute"));
+        }
     }
 }

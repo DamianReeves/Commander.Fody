@@ -2,44 +2,47 @@
 using System.Linq;
 using Mono.Cecil;
 
-public static class CecilExtensions
+namespace Commander.Fody
 {
-    public static bool ContainsAttribute(this IEnumerable<CustomAttribute> attributes, string attributeName)
+    public static class CecilExtensions
     {
-        return attributes.Any(x => x.Constructor.DeclaringType.Name == attributeName);
-    }
-
-    public static void ValidateIsOfType(this FieldReference targetReference, TypeReference expectedType)
-    {
-        if (targetReference.FieldType.Name != expectedType.Name)
+        public static bool ContainsAttribute(this IEnumerable<CustomAttribute> attributes, string attributeName)
         {
-            throw new WeavingException(string.Format("Field '{0}' could not be re-used because it is not the correct type. Expected '{1}'.", targetReference.Name, expectedType.Name));
+            return attributes.Any(x => x.Constructor.DeclaringType.Name == attributeName);
         }
-    }
 
-    public static void ValidateIsOfType(this PropertyReference targetReference, TypeReference expectedType)
-    {
-        if (targetReference.PropertyType.Name != expectedType.Name)
+        public static void ValidateIsOfType(this FieldReference targetReference, TypeReference expectedType)
         {
-            throw new WeavingException(string.Format("Property '{0}' could not be re-used because it is not the correct type. Expected '{1}'.", targetReference.Name, expectedType.Name));
+            if (targetReference.FieldType.Name != expectedType.Name)
+            {
+                throw new WeavingException(string.Format("Field '{0}' could not be re-used because it is not the correct type. Expected '{1}'.", targetReference.Name, expectedType.Name));
+            }
         }
-    }
 
-    public static FieldDefinition AddField(this TypeDefinition targetType, TypeReference fieldType, string fieldName)
-    {
-        var fieldDefinition = targetType.Fields.FirstOrDefault(x => x.Name == fieldName);
-        if (fieldDefinition != null)
+        public static void ValidateIsOfType(this PropertyReference targetReference, TypeReference expectedType)
         {
-            fieldDefinition.ValidateIsOfType(fieldType);
+            if (targetReference.PropertyType.Name != expectedType.Name)
+            {
+                throw new WeavingException(string.Format("Property '{0}' could not be re-used because it is not the correct type. Expected '{1}'.", targetReference.Name, expectedType.Name));
+            }
+        }
+
+        public static FieldDefinition AddField(this TypeDefinition targetType, TypeReference fieldType, string fieldName)
+        {
+            var fieldDefinition = targetType.Fields.FirstOrDefault(x => x.Name == fieldName);
+            if (fieldDefinition != null)
+            {
+                fieldDefinition.ValidateIsOfType(fieldType);
+                return fieldDefinition;
+            }
+            fieldDefinition = new FieldDefinition(fieldName, FieldAttributes.Private, fieldType);
+            targetType.Fields.Add(fieldDefinition);
             return fieldDefinition;
         }
-        fieldDefinition = new FieldDefinition(fieldName, FieldAttributes.Private, fieldType);
-        targetType.Fields.Add(fieldDefinition);
-        return fieldDefinition;
-    }
 
-    public static bool IsBoolean(this TypeReference type)
-    {
-        return (type.FullName == "System.Boolean" || type.Name == "bool" );
+        public static bool IsBoolean(this TypeReference type)
+        {
+            return (type.FullName == "System.Boolean" || type.Name == "bool" );
+        }
     }
 }

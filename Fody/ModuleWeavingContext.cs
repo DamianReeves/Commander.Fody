@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Commander.Fody;
 using Mono.Cecil;
 
 public class ModuleWeavingContext

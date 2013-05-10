@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using Commander.Fody;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 public class ModuleWeaver
 {
@@ -12,6 +14,11 @@ public class ModuleWeaver
 
     // Will log an informational message to MSBuild
     public Action<string> LogInfo { get; set; }
+    public Action<string> LogWarning { get; set; }
+    public Action<string, SequencePoint> LogWarningPoint { get; set; }
+    public Action<string> LogError { get; set; }
+    public Action<string, SequencePoint> LogErrorPoint { get; set; }
+
     // An instance of Mono.Cecil.ModuleDefinition for processing
     public ModuleDefinition ModuleDefinition { get; set; }
     public IAssemblyResolver AssemblyResolver { get; set; }    

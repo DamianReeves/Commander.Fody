@@ -1,21 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Mono.Cecil;
 
-public static class DelegateCommandFinder
+namespace Commander.Fody
 {
-    public static bool TryFindDelegateCommandType(this ModuleWeavingContext context, out TypeReference delegateCommand)
+    public static class DelegateCommandFinder
     {
-        var results =
-            from type in context.AllTypes
-            where type.Name == "DelegateCommand" || type.Name == "RelayCommand"
-            select type;
-
-        delegateCommand = results.FirstOrDefault();
-        if (delegateCommand != null)
+        public static bool TryFindDelegateCommandType(this ModuleWeavingContext context, out TypeReference delegateCommand)
         {
-            context.Logger(string.Format("Found DelegateCommand in {0}.", context.ModuleDefinition.FullyQualifiedName));
+            var results =
+                from type in context.AllTypes
+                where type.Name == "DelegateCommand" || type.Name == "RelayCommand"
+                select type;
+
+            delegateCommand = results.FirstOrDefault();
+            if (delegateCommand != null)
+            {
+                context.Logger(string.Format("Found DelegateCommand in {0}.", context.ModuleDefinition.FullyQualifiedName));
+            }
+            return delegateCommand != null;
         }
-        return delegateCommand != null;
     }
 }

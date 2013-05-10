@@ -13,20 +13,20 @@ public class OnCommandAttributeReaderTests
     [Test,Ignore]
     public void Simple()
     {
-        var reader = new ModuleWeaver
+        var weaver = new ModuleWeaver
         {
             ModuleDefinition = DefinitionFinder.FindType<CommandClass>().Module
         };
         var logs = new List<string>();
-        reader.LogInfo = s =>
+        weaver.LogInfo = s =>
         {
             logs.Add(s);
             Console.WriteLine(s);
         };
 
         var type =  DefinitionFinder.FindType<CommandClass>();
-        var context = new ModuleWeavingContext(reader.ModuleDefinition, reader.LogInfo);
-        reader.GatherCommandPointcuts(type, context);
+        var context = new ModuleWeavingContext(weaver.ModuleDefinition, weaver.LogInfo);
+        weaver.Prepare(type, context);
 
         var onCommandLog = logs.Where(s => s.StartsWith("Found OnCommand method")).ToList();
         onCommandLog.Should().HaveCount(1);
