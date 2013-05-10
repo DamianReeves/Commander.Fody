@@ -19,19 +19,19 @@ public class ModuleWeaver
     public void Execute()
     {
         var context = new ModuleWeavingContext(ModuleDefinition, LogInfo);
-        GatherCommandPointcuts(context);
+        Prepare(context);
         AddCommandInitialization(context);
     }
 
-    public void GatherCommandPointcuts(ModuleWeavingContext moduleContext)
+    public void Prepare(ModuleWeavingContext moduleContext)
     {
         foreach (var type in moduleContext.AllTypes)
         {
-            GatherCommandPointcuts(type, moduleContext);
+            Prepare(type, moduleContext);
         }
     }
 
-    public void GatherCommandPointcuts(TypeDefinition typeDefinition, ModuleWeavingContext context)
+    public void Prepare(TypeDefinition typeDefinition, ModuleWeavingContext context)
     {
         var onCommandMethods = typeDefinition.FindOnCommandMethods().ToList();
         if (!onCommandMethods.Any())
@@ -66,13 +66,13 @@ public class ModuleWeaver
                 PropertyDefinition propertyDefinition;
                 if (context.Type.TypeDefinition.TryAddCommandProperty(icommandTypeRef, commandName, out propertyDefinition))
                 {
-                    var commandData = new CommandData {CommandProperty = propertyDefinition};
+                    var commandData = new CommandData(commandName) {CommandProperty = propertyDefinition};
                     context.Type.ReferencedCommands.Add(commandData);
                     context.Type.InjectedCommands.Add(commandData);
                 }
                 else
                 {
-                    var commandData = new CommandData { CommandProperty = propertyDefinition };
+                    var commandData = new CommandData(commandName) { CommandProperty = propertyDefinition };
                     context.Type.ReferencedCommands.Add(commandData);
                 }
             }

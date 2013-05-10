@@ -17,7 +17,16 @@ public class TypeNode
 
 public class CommandData
 {
+    public readonly string CommandName;
+    public bool InjectionRequired;    
     public PropertyDefinition CommandProperty;
+    public List<MethodDefinition> OnExecuteMethods;
+    public MethodDefinition CanExecuteMethod; 
     public TypeReference DelegateCommandTypeReference;
     public MethodReference DelegateCommandConstructorReference;
+
+    public CommandData(string commandName)
+    {
+        OnExecuteMethods = new List<MethodDefinition>();
+    }
 }
