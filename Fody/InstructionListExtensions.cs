@@ -1,4 +1,5 @@
-﻿using Mono.Cecil.Cil;
+﻿using System;
+using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 
 public static class InstructionListExtensions
@@ -26,5 +27,19 @@ public static class InstructionListExtensions
         {
             collection.Insert(index, instructions[index]);
         }
+    }
+
+    public static Instruction GetLastInstructionWhere(this Collection<Instruction> collection, Func<Instruction, bool> predicate)
+    {
+        for (int idx = collection.Count - 1; idx >= 0; idx--)
+        {
+            var instruction = collection[idx];
+            if (predicate(instruction))
+            {
+                return instruction;
+            }            
+        }
+
+        return null;
     }
 }

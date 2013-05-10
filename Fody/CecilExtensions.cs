@@ -37,4 +37,9 @@ public static class CecilExtensions
         targetType.Fields.Add(fieldDefinition);
         return fieldDefinition;
     }
+
+    public static bool IsBoolean(this TypeReference type)
+    {
+        return (type.FullName == "System.Boolean" || type.Name == "bool" );
+    }
 }

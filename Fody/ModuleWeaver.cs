@@ -85,13 +85,23 @@ public class ModuleWeaver
 
     public void AddCommandInitialization(ModuleWeavingContext context)
     {
+        MethodDefinition initializeMethod = null;
         foreach (var typeNode in context.WeavableTypes)
         {
             if (typeNode.ReferencedCommands.Any())
-            {
-                MethodDefinition initializeMethod;
+            {                
                 typeNode.TypeDefinition.TryAddCommandInitializerMethod(out initializeMethod);
             }
+            if (initializeMethod == null)
+            {
+                // TODO: First log/notify that there is a problem
+                continue;
+            }
+            foreach (var command in typeNode.ReferencedCommands)
+            {
+                typeNode.TypeDefinition.TryAddCommandPropertyInitialization(initializeMethod, command);
+            }
+            initializeMethod = null;
         }
     }
 }
