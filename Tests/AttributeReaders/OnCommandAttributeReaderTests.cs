@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Commander;
+using Commander.Fody;
 using FluentAssertions;
 using NUnit.Framework;
 

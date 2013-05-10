@@ -1,10 +1,13 @@
 ﻿using System;
 
-public class WeavingException : Exception
+namespace Commander.Fody
 {
-    public WeavingException(string message)
-        : base(message)
+    public class WeavingException : Exception
     {
+        public WeavingException(string message)
+            : base(message)
+        {
 
+        }
     }
 }
