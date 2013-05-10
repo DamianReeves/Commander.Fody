@@ -5,13 +5,13 @@ using Mono.Cecil;
 
 namespace Commander.Fody
 {
-    public class WeaverCommonTypes
+    public class CommonTypes
     {
         public readonly TypeReference ICommand;
         public TypeReference DelegateCommand { get; set; }
         public ModuleDefinition ModuleDefinition { get; private set; }
 
-        public WeaverCommonTypes(ModuleWeavingContext moduleContext)
+        public CommonTypes(ModuleWeavingContext moduleContext)
         {
             ModuleDefinition = moduleContext.ModuleDefinition;
             var assemblyResolver = ModuleDefinition.AssemblyResolver;

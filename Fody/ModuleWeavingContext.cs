@@ -7,7 +7,7 @@ using Mono.Cecil;
 public class ModuleWeavingContext
 {
     private readonly ModuleDefinition _moduleDefinition;
-    private readonly WeaverCommonTypes _commonTypes;
+    private readonly CommonTypes _commonTypes;
     private readonly List<TypeDefinition> _allTypes;
     private readonly List<TypeNode> _weavableTypes;
     private readonly Action<string> _logger;
@@ -18,7 +18,7 @@ public class ModuleWeavingContext
         _logger = logger;
         _allTypes = moduleDefinition.GetTypes().Where(x => x.IsClass).ToList();
         _weavableTypes = new List<TypeNode>();
-        _commonTypes = new WeaverCommonTypes(this);           
+        _commonTypes = new CommonTypes(this);           
     }
 
     public List<TypeDefinition> AllTypes
@@ -26,7 +26,7 @@ public class ModuleWeavingContext
         get { return _allTypes; }
     }
 
-    public WeaverCommonTypes CommonTypes
+    public CommonTypes CommonTypes
     {
         get { return _commonTypes; }
     }  

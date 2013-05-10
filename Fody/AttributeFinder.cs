@@ -8,7 +8,7 @@ namespace Commander.Fody
     {
         public static IEnumerable<MethodDefinition> FindOnCommandMethods(this TypeDefinition type)
         {
-            return type.Methods.Where(method => CecilExtensions.ContainsAttribute(method.CustomAttributes, "OnCommandAttribute"));
+            return type.Methods.Where(method => method.CustomAttributes.ContainsAttribute("OnCommandAttribute"));
         }
     }
 }

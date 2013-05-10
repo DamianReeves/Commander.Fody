@@ -1,34 +1,64 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Commander.Fody
 {
-    public class ModuleWeaver
+    public class ModuleWeaver: IFodyLogger
     {
         public ModuleWeaver()
         {
-            LogInfo = s => { };
+            LogInfo = m => { };
+            LogWarning = m => { };
+            LogWarningPoint = (m, p) => { };
+            LogError = m => { };
+            LogErrorPoint = (m, p) => { };
         }
 
-        // Will log an informational message to MSBuild
+        // Will contain the full element XML from FodyWeavers.xml. OPTIONAL
+        public XElement Config { get; set; }
+
         public Action<string> LogInfo { get; set; }
         public Action<string> LogWarning { get; set; }
         public Action<string, SequencePoint> LogWarningPoint { get; set; }
         public Action<string> LogError { get; set; }
         public Action<string, SequencePoint> LogErrorPoint { get; set; }
 
-        // An instance of Mono.Cecil.ModuleDefinition for processing
         public ModuleDefinition ModuleDefinition { get; set; }
-        public IAssemblyResolver AssemblyResolver { get; set; }    
+        public IAssemblyResolver AssemblyResolver { get; set; }
+        public Assets Assets { get; private set; }
 
         public void Execute()
         {
+            Assets = new Assets(ModuleDefinition, this);
             var context = new ModuleWeavingContext(ModuleDefinition, LogInfo);
             Prepare(context);
             AddCommandInitialization(context);
+        }
+
+        public IEnumerable<TypeDefinition> GetTypesToProcess()
+        {
+            return ModuleDefinition.GetTypes().Where(x => x.IsClass);
+        }
+
+        public void ProcessTypes(IEnumerable<TypeDefinition> types)
+        {
+            foreach (var type in types)
+            {
+                try
+                {
+                    var typeProcessor = new TypeProcessor(type, this);
+                    typeProcessor.Execute();
+                }
+                catch(Exception ex)
+                {
+                    Assets.Log.Error(ex);
+                }                
+            }
         }
 
         public void Prepare(ModuleWeavingContext moduleContext)
@@ -65,10 +95,10 @@ namespace Commander.Fody
             var icommandTypeRef = context.ModuleContext.CommonTypes.ICommand;
             foreach (var commandName in commandNames)
             {
-                LogInfo(string.Format("Found OnCommand method {0} for command {1} on type {2}"
+                this.Info("Found OnCommand method {0} for command {1} on type {2}"
                     , method
                     , commandName
-                    , type.Name));
+                    , type.Name);
                 try
                 {
                     PropertyDefinition propertyDefinition;
@@ -86,7 +116,7 @@ namespace Commander.Fody
                 }
                 catch (Exception ex)
                 {
-                    LogInfo(string.Format("Error while adding property {0} to {1}: {2}", commandName, type, ex));
+                    this.Error("Error while adding property {0} to {1}: {2}", commandName, type, ex);
                 }
             }               
         }
