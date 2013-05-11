@@ -17,7 +17,9 @@ public class AssemblyWithDelegateCommandDotNet4Tests : BaseTaskTests
     {
         var instance = Assembly.GetInstance("CommandClass");
         var testCommand = instance.TestCommand;
-        var type = ((object) testCommand).GetType();
-        type.ShouldHave().Properties(t=>t.Name).EqualTo(new {Name="DelegateCommand"});
+        object testCommandObject = testCommand;
+        testCommandObject.Should().NotBeNull("TestCommand should be initialized.");
+        var type = (testCommandObject).GetType();
+        type.Name.Should().Be("DelegateCommand");
     }
 }
