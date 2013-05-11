@@ -42,11 +42,16 @@ public class CommandClassWithInitializer
         {
             SubmitCommand = new DelegateCommand(OnSubmit);
         }
+
+        if (NullCommand == null)
+        {
+            NullCommand = null;
+        }
     }
 
     public ICommand TestCommand { get; set; }
     public ICommand SubmitCommand { get; set; }
-    
+    public ICommand NullCommand { get; set; }
     public void OnTestCommand()
     {        
     }

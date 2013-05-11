@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Commander.Fody
 {
@@ -19,6 +20,7 @@ namespace Commander.Fody
         private readonly TypeReference _objectTypeReference;
         private readonly TypeReference _booleanTypeReference;
         private readonly TypeReference _iCommandTypeReference;
+        private readonly IList<MethodReference> _commandImplementationConstructors;
 
         public Assets([NotNull] ModuleDefinition moduleDefinition, [NotNull] IFodyLogger log)
         {
@@ -40,10 +42,29 @@ namespace Commander.Fody
             _booleanTypeReference = moduleDefinition.TypeSystem.Boolean;
 
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
-            var presentationCoreDefinition = GetPresentationCoreDefinition();
-            var presentationCoreTypes = presentationCoreDefinition.MainModule.Types;
+            var msCoreLibDefinition = assemblyResolver.Resolve("mscorlib");
+            var msCoreTypes = msCoreLibDefinition.MainModule.Types;
+
             var systemDefinition = assemblyResolver.Resolve("System");
             var systemTypes = systemDefinition.MainModule.Types;
+
+            var actionDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Action");
+            if (actionDefinition == null)
+            {
+                actionDefinition = systemTypes.FirstOrDefault(x => x.Name == "Action");
+            }
+            var systemCoreDefinition = GetSystemCoreDefinition();
+            if (actionDefinition == null)
+            {
+                actionDefinition = systemCoreDefinition.MainModule.Types.First(x => x.Name == "Action");
+            }
+            ActionTypeReference = ModuleDefinition.Import(actionDefinition);
+
+            var actionConstructor = actionDefinition.Methods.First(x => x.IsConstructor);
+            ActionConstructorReference = ModuleDefinition.Import(actionConstructor);
+
+            var presentationCoreDefinition = GetPresentationCoreDefinition();
+            var presentationCoreTypes = presentationCoreDefinition.MainModule.Types;
             var iCommandDefinition = presentationCoreTypes.FirstOrDefault(x => x.Name == "ICommand");
             if (iCommandDefinition == null)
             {
@@ -55,8 +76,13 @@ namespace Commander.Fody
                 const string message = "Could not find type System.Windows.Input.ICommand.";
                 throw new WeavingException(message);
             }
+            _commandImplementationConstructors = GetCommandImplementationConstructors().ToList();
         }
-        
+
+        public MethodReference ActionConstructorReference { get; private set; }
+
+        public TypeReference ActionTypeReference { get; private set; }
+
         public ModuleDefinition ModuleDefinition
         {
             get { return _moduleDefinition; }
@@ -97,6 +123,31 @@ namespace Commander.Fody
             get { return _iCommandTypeReference; }
         }
 
+        public IList<MethodReference> CommandImplementationConstructors
+        {
+            get { return _commandImplementationConstructors; }
+        }
+
+        internal IEnumerable<MethodReference> GetCommandImplementationConstructors()
+        {
+            var commandTypes =
+                from @class in AllClasses
+                where !@class.IsAbstract
+                    //&& @class.Implements(ICommandTypeReference)
+                    && @class.Name.EndsWith("Command")
+                select @class;
+
+            var elligibleCtors =
+                from type in commandTypes
+                from ctor in type.GetConstructors()
+                where ctor.HasParameters
+                && ctor.Parameters.Count == 1
+                && ctor.Parameters[0].ParameterType.FullNameMatches(ActionTypeReference)
+                select ModuleDefinition.Import(ctor);
+
+            return elligibleCtors;
+        }
+
         AssemblyDefinition GetPresentationCoreDefinition()
         {
             try
@@ -107,6 +158,19 @@ namespace Commander.Fody
             {
                 var message = string.Format(@"Could not resolve PresentationCore. Please ensure you are using .net 3.5 or higher.{0}Inner message:{1}.", Environment.NewLine, exception.Message);
                 message += " AssemblyResolver is: " + ModuleDefinition.AssemblyResolver.GetType().FullName;
+                throw new WeavingException(message);
+            }
+        }
+
+        AssemblyDefinition GetSystemCoreDefinition()
+        {
+            try
+            {
+                return ModuleDefinition.AssemblyResolver.Resolve("System.Core");
+            }
+            catch (Exception exception)
+            {
+                var message = string.Format(@"Could not resolve System.Core. Please ensure you are using .net 3.5 or higher.{0}Inner message:{1}.", Environment.NewLine, exception.Message);
                 throw new WeavingException(message);
             }
         }

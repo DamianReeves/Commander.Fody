@@ -43,5 +43,10 @@ namespace Commander.Fody
         {
             get { return _canExecuteMethods; }
         }
+
+        public override string ToString()
+        {
+            return string.Format(CommandName);
+        }
     }
 }

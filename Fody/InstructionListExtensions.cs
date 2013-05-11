@@ -44,5 +44,34 @@ namespace Commander.Fody
 
             return null;
         }
+
+        public static void BeforeInstruction(this Collection<Instruction> collection, Func<Instruction, bool> predicate, params Instruction[] instructions)
+        {
+            int targetPos = collection.Count - 1;
+            for (int idx = collection.Count - 1; idx >= 0; idx--)
+            {
+                var instruction = collection[idx];
+                if (predicate(instruction))
+                {
+                    targetPos = idx;
+                    break;
+                }
+            }
+            
+            if (targetPos < 0)
+            {
+                targetPos = 0;
+            } 
+            else if (targetPos > collection.Count)
+            {
+                targetPos = collection.Count;
+            }
+
+            foreach (var instruction in instructions)
+            {
+                collection.Insert(targetPos, instruction);
+                targetPos++;
+            }
+        }
     }
 }

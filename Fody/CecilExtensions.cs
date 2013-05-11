@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Commander.Fody
 {
@@ -95,5 +96,20 @@ namespace Commander.Fody
 
             return false;
         }
-    }
+
+        public static void InsertBefore(this ILProcessor processor, Instruction target, IEnumerable<Instruction> instructions)
+        {
+            foreach (var instruction in instructions)
+                processor.InsertBefore(target, instruction);
+        }
+
+        public static void InsertAfter(this ILProcessor processor, Instruction target, IEnumerable<Instruction> instructions)
+        {
+            foreach (var instruction in instructions)
+            {
+                processor.InsertAfter(target, instruction);
+                target = instruction;
+            }
+        }
+    }    
 }

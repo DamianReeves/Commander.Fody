@@ -33,11 +33,11 @@ public class DelegateCommand : ICommand
 
     public void Execute(object parameter)
     {
-        
+        _execute(parameter);
     }
 
     public bool CanExecute(object parameter)
     {
-        throw new NotImplementedException();
+        return _canExecute(parameter);
     }    
 }
