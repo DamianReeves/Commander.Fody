@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Commander.Fody</id>
+    <version>$version$</version>
+    <title>Commander.Fody</title>
+    <authors>Damian Reeves</authors>
+    <owners>Damian Reeves</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>https://github.com/DamianReeves/Commander.Fody</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <iconUrl>https://raw.github.com/DamianReeves/Commander.Fody/master/Icons/package_icon.png</iconUrl>
+    <description>Fody add-in for command invoking and implementation.</description>
+    <language>en</language>
+    <tags>Commander, ILWeaving, Fody, Cecil</tags>
+    <dependencies>
+      <dependency id="Fody"/>
+    </dependencies>
+  </metadata>
+</package>
