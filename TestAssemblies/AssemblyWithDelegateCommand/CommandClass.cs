@@ -84,7 +84,7 @@ public class ExampleCommandClassWithInitializer
         return true;
     }
 
-    public void OnExecuteNestedCommand()
+    public void OnExecuteNestedCommand(object parameter)
     {        
     }
 
@@ -105,7 +105,7 @@ public class ExampleCommandClassWithInitializer
 
         public void Execute(object parameter)
         {
-            _owner.OnExecuteNestedCommand();
+            _owner.OnExecuteNestedCommand(parameter);
         }
 
         public bool CanExecute(object parameter)

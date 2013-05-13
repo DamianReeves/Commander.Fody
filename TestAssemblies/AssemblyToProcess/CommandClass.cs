@@ -15,4 +15,10 @@ public class CommandClass
     {
 
     }
+
+    [OnCommand("TestCommand2")]
+    public void OnTestCommandWithParameter(object parameter)
+    {
+        
+    }
 }

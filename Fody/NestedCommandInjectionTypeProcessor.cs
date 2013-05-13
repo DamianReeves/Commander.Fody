@@ -212,6 +212,10 @@ namespace Commander.Fody
             {
                 il.Append(Instruction.Create(OpCodes.Ldarg_0));
                 il.Append(Instruction.Create(OpCodes.Ldfld, field));   
+                if (onExecuteMethod.Parameters.Count == 1)
+                {
+                    il.Append(Instruction.Create(OpCodes.Ldarg_1));
+                }                
                 if (onExecuteMethod.IsVirtual)
                 {
                     il.Append(Instruction.Create(OpCodes.Callvirt, onExecuteMethod));
