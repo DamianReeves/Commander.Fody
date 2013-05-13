@@ -36,9 +36,9 @@ public class CommandClass
     }
 }
 
-public class CommandClassWithInitializer
+public class ExampleCommandClassWithInitializer
 {
-    public CommandClassWithInitializer()
+    public ExampleCommandClassWithInitializer()
     {
         this.InitializeCommands();
     }

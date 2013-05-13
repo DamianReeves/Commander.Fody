@@ -90,7 +90,7 @@ namespace Commander.Fody
                 const string message = "Could not find type System.Windows.Input.ICommand.";
                 throw new WeavingException(message);
             }
-            _commandImplementationConstructors = GetCommandImplementationConstructors().ToList();
+            _commandImplementationConstructors = GetCommandImplementationConstructors();
         }
 
         public MethodReference ActionConstructorReference { get; private set; }
@@ -152,7 +152,7 @@ namespace Commander.Fody
             get { return _funcOfBoolConstructorReference; }
         }
 
-        internal IEnumerable<MethodReference> GetCommandImplementationConstructors()
+        internal IList<MethodReference> GetCommandImplementationConstructors()
         {
             var commandTypes =
                 from @class in AllClasses
@@ -162,7 +162,7 @@ namespace Commander.Fody
                 select @class;
 
             // TODO: My goodness the implementation below is HACKY... gotta add some smarts
-            var elligibleCtors =
+            var eligibleCtors =
                 from type in commandTypes
                 from ctor in type.GetConstructors()
                 where (ctor.HasParameters
@@ -171,11 +171,17 @@ namespace Commander.Fody
                 || (ctor.HasParameters
                 && ctor.Parameters.Count == 2
                 && ctor.Parameters[0].ParameterType.FullNameMatches(ActionTypeReference)
-                && ctor.Parameters[1].ParameterType.Name.StartsWith("Func")
+                && ctor.Parameters[1].ParameterType.Name.StartsWith("Func") 
+                && ctor.Parameters[1].ParameterType.IsGenericInstance
                 )
                 select ModuleDefinition.Import(ctor);
 
-            return elligibleCtors;
+            var ctors = eligibleCtors.ToList();
+            foreach (var ctor in ctors)
+            {
+                Log.Info("Found eligible ICommand implementation constructor: {0}", ctor);
+            }
+            return ctors;
         }
 
         AssemblyDefinition GetPresentationCoreDefinition()

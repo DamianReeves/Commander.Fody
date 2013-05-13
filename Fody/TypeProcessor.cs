@@ -47,7 +47,7 @@ namespace Commander.Fody
 
         public bool IsValidOnExecuteMethod(MethodDefinition method)
         {
-            return method.ReturnType.Matches(Assets.BooleanTypeReference)
+            return method.ReturnType == Assets.VoidTypeReference
                 && (!method.HasParameters
                     || (method.Parameters.Count == 1 
                     && !method.Parameters[0].IsOut
@@ -56,7 +56,7 @@ namespace Commander.Fody
 
         public bool IsValidCanExecuteMethod(MethodDefinition method)
         {
-            return method.ReturnType.Matches(Assets.VoidTypeReference)
+            return method.ReturnType == Assets.BooleanTypeReference
                 && (!method.HasParameters
                     || (method.Parameters.Count == 1
                     && !method.Parameters[0].IsOut
@@ -71,7 +71,13 @@ namespace Commander.Fody
                 if (!IsValidOnExecuteMethod(method))
                 {
                     Assets.Log.Warning("Method: {0} is not a valid OnExecute method for ICommand binding..", method);
-
+                    Assets.Log.Warning("Method: {0} parameter info:", method);
+                    for (int index = 0; index < method.Parameters.Count; index++)
+                    {
+                        var parameter = method.Parameters[index];
+                        Assets.Log.Info("Parameter[{0}]: {1}", index, parameter);
+                    }
+                    continue;
                 }
 
                 // Find OnCommand methods where name is given
@@ -99,9 +105,16 @@ namespace Commander.Fody
             var methods = FindCommandCanExecuteMethods(Type);
             foreach (var method in methods)
             {
-                if (!IsValidOnExecuteMethod(method))
+                if (!IsValidCanExecuteMethod(method))
                 {
                     Assets.Log.Warning("Method: {0} is not a valid CanExecute method for ICommand binding.", method);
+                    Assets.Log.Warning("Method: {0} parameter info:", method);
+                    for (int index = 0; index < method.Parameters.Count; index++)
+                    {
+                        var parameter = method.Parameters[index];
+                        Assets.Log.Info("Parameter[{0}]: {1}", index, parameter);
+                    }
+                    continue;
                 }
 
 
