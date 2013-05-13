@@ -22,6 +22,18 @@ public class CommandClass
     {
         
     }
+
+    [OnCommandCanExecute("SubmitCommand")]
+    public bool CanSubmit()
+    {
+        return true;
+    }
+
+    [OnCommand("SubmitCommand")]
+    public void OnSubmitCommand()
+    {
+        
+    }
 }
 
 public class CommandClassWithInitializer
@@ -40,7 +52,7 @@ public class CommandClassWithInitializer
 
         if (SubmitCommand == null)
         {
-            SubmitCommand = new DelegateCommand(OnSubmit);
+            SubmitCommand = new DelegateCommand(OnSubmit, CanSubmit);
         }
 
         if (NullCommand == null)
@@ -54,6 +66,11 @@ public class CommandClassWithInitializer
     public ICommand NullCommand { get; set; }
     public void OnTestCommand()
     {        
+    }
+
+    public bool CanSubmit()
+    {
+        return true;
     }
 
     public void OnSubmit()

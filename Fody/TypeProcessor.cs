@@ -115,6 +115,10 @@ namespace Commander.Fody
                 foreach (var attribute in attributes)
                 {
                     var commandName = (string)attribute.ConstructorArguments[0].Value;
+                    Assets.Log.Info("Found OnCommandCanExecute method {0} for command {1} on type {2}"
+                    , method
+                    , commandName
+                    , Type.Name);
                     var command = Commands.GetOrAdd(commandName, name => new CommandData(name));
                     command.CanExecuteMethods.Add(method);
                 }
@@ -256,16 +260,41 @@ namespace Commander.Fody
                 blockEnd
                 );
 
-            instructions.BeforeInstruction(inst => inst == blockEnd,
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single()),
-                Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
-                Instruction.Create(OpCodes.Newobj, commandCtor),
-                Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
-                Instruction.Create(OpCodes.Nop),
-                Instruction.Create(OpCodes.Nop)
-                );
+            // TODO: Just building up support at this time need to be able to handle more combinations and edge cases
+            var onExecuteMethod = commandData.OnExecuteMethods.Single();
+            var canExecuteMethod = commandData.CanExecuteMethods.FirstOrDefault();
+
+            if (canExecuteMethod == null)
+            {                
+                instructions.BeforeInstruction(inst => inst == blockEnd,
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single()),
+                    Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
+                    Instruction.Create(OpCodes.Newobj, commandCtor),
+                    Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
+                    Instruction.Create(OpCodes.Nop),
+                    Instruction.Create(OpCodes.Nop)
+                    );
+            }
+            else
+            {
+                commandCtor = Assets.CommandImplementationConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
+                instructions.BeforeInstruction(inst => inst == blockEnd,
+                    Instruction.Create(OpCodes.Nop),
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single()),                    
+                    Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldftn, commandData.CanExecuteMethods.Single()),
+                    Instruction.Create(OpCodes.Newobj, Assets.FuncOfBoolConstructorReference),
+                    Instruction.Create(OpCodes.Newobj, commandCtor),
+                    Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
+                    Instruction.Create(OpCodes.Nop),
+                    Instruction.Create(OpCodes.Nop)
+                    );
+            }            
             return true;
         }
 

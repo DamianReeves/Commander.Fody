@@ -20,6 +20,8 @@ namespace Commander.Fody
         private readonly TypeReference _objectTypeReference;
         private readonly TypeReference _booleanTypeReference;
         private readonly TypeReference _iCommandTypeReference;
+        private readonly TypeReference _funcOfBoolTypeReference;
+        private readonly MethodReference _funcOfBoolConstructorReference;
         private readonly IList<MethodReference> _commandImplementationConstructors;
 
         public Assets([NotNull] ModuleDefinition moduleDefinition, [NotNull] IFodyLogger log)
@@ -63,6 +65,18 @@ namespace Commander.Fody
             var actionConstructor = actionDefinition.Methods.First(x => x.IsConstructor);
             ActionConstructorReference = ModuleDefinition.Import(actionConstructor);
 
+            var funcDefinition = msCoreTypes.FirstOrDefault(x => x.Name.StartsWith("Func") && x.HasGenericParameters);
+            if (funcDefinition == null)
+            {
+                funcDefinition = systemTypes.FirstOrDefault(x => x.Name == "Func");
+            }
+            if (funcDefinition == null)
+            {
+                funcDefinition = systemCoreDefinition.MainModule.Types.First(x => x.Name == "Func");
+            }
+            _funcOfBoolTypeReference = ModuleDefinition.Import(funcDefinition);
+            var funcConstructor = funcDefinition.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
+            _funcOfBoolConstructorReference = ModuleDefinition.Import(funcConstructor).MakeHostInstanceGeneric(BooleanTypeReference);
             var presentationCoreDefinition = GetPresentationCoreDefinition();
             var presentationCoreTypes = presentationCoreDefinition.MainModule.Types;
             var iCommandDefinition = presentationCoreTypes.FirstOrDefault(x => x.Name == "ICommand");
@@ -128,6 +142,16 @@ namespace Commander.Fody
             get { return _commandImplementationConstructors; }
         }
 
+        public TypeReference FuncOfBoolTypeReference
+        {
+            get { return _funcOfBoolTypeReference; }
+        }
+
+        public MethodReference FuncOfBoolConstructorReference
+        {
+            get { return _funcOfBoolConstructorReference; }
+        }
+
         internal IEnumerable<MethodReference> GetCommandImplementationConstructors()
         {
             var commandTypes =
@@ -137,12 +161,18 @@ namespace Commander.Fody
                     && @class.Name.EndsWith("Command")
                 select @class;
 
+            // TODO: My goodness the implementation below is HACKY... gotta add some smarts
             var elligibleCtors =
                 from type in commandTypes
                 from ctor in type.GetConstructors()
-                where ctor.HasParameters
+                where (ctor.HasParameters
                 && ctor.Parameters.Count == 1
+                && ctor.Parameters[0].ParameterType.FullNameMatches(ActionTypeReference))
+                || (ctor.HasParameters
+                && ctor.Parameters.Count == 2
                 && ctor.Parameters[0].ParameterType.FullNameMatches(ActionTypeReference)
+                && ctor.Parameters[1].ParameterType.Name.StartsWith("Func")
+                )
                 select ModuleDefinition.Import(ctor);
 
             return elligibleCtors;

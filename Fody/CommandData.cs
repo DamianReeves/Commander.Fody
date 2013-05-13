@@ -13,7 +13,6 @@ namespace Commander.Fody
         public PropertyDefinition CommandProperty;
         private readonly List<MethodDefinition> _onExecuteMethods;
         private readonly List<MethodDefinition> _canExecuteMethods;
-        public MethodDefinition CanExecuteMethod; 
         public TypeReference DelegateCommandTypeReference;
         public MethodReference DelegateCommandConstructorReference;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Commander.Fody
 {
@@ -64,6 +65,33 @@ namespace Commander.Fody
             fieldDefinition = new FieldDefinition(fieldName, FieldAttributes.Private, fieldType);
             targetType.Fields.Add(fieldDefinition);
             return fieldDefinition;
+        }
+
+        public static MethodReference MakeHostInstanceGeneric(
+                                  this MethodReference self,
+                                  params TypeReference[] args)
+        {
+            var reference = new MethodReference(
+                self.Name,
+                self.ReturnType,
+                self.DeclaringType.MakeGenericInstanceType(args))
+            {
+                HasThis = self.HasThis,
+                ExplicitThis = self.ExplicitThis,
+                CallingConvention = self.CallingConvention
+            };
+
+            foreach (var parameter in self.Parameters)
+            {
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            }
+
+            foreach (var genericParam in self.GenericParameters)
+            {
+                reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
+            }
+
+            return reference;
         }
 
         public static bool IsBoolean(this TypeReference type)
