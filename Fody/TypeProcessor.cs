@@ -5,6 +5,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
 
 namespace Commander.Fody
 {
@@ -32,8 +33,11 @@ namespace Commander.Fody
             ScanForOnCommandAttribute();
             ScanForOnCommandCanExecuteAttribute();
             InjectCommandProperties();
-            InjectCommandInitialization();
-        }
+            if (Commands.Count > 0)
+            {
+                InjectCommandInitialization();
+            }            
+        }        
 
         public IEnumerable<MethodDefinition> FindOnCommandMethods(TypeDefinition type)
         {
@@ -165,37 +169,21 @@ namespace Commander.Fody
             {
                 Assets.Log.Info("Command initialization for type: {0} skipped since there were no commands to bind.", Type.FullName);
                 return;
-            }
-
-            if (Assets.CommandImplementationConstructors.Count == 0)
-            {
-                Assets.Log.Info("Command initialization for type: {0} skipped since there were no eligible command implementations.", Type.FullName);
-                return;
-            }
+            }            
 
             var initializeMethod = AddCommandInitializerMethod();
-            foreach (var commandData in Commands.Values)
+            if (Assets.CommandImplementationConstructors.Count == 0)
             {
-                try
-                {
-                    Assets.Log.Info("Trying to add initialization for command: {0}.", commandData.CommandName);
-                    if (TryAddCommandPropertyInitialization(initializeMethod, commandData))
-                    {
-                        Assets.Log.Info("Successfully added initialization for command: {0}.",
-                            commandData.CommandName);
-                    }
-                    else
-                    {
-                        Assets.Log.Warning("Failed to add initialization for command: {0}.", commandData.CommandName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Assets.Log.Error(ex);
-                }
-            }      
+                Assets.Log.Info("Opting for nested command injection for type: {0} since there were no eligible command implementations.", Type.FullName);
+                //Assets.Log.Info("Command initialization for type: {0} skipped since there were no eligible command implementations.", Type.FullName);
+                InjectCommandInitializationWithNestedCommand(initializeMethod);
+            }
+            else
+            {
+                InjectCommandInitializationWithDelegateCommand(initializeMethod);     
+            }             
             AddInitializationToConstructors(initializeMethod);
-        }
+        }        
 
         public MethodDefinition AddCommandInitializerMethod()
         {
@@ -239,21 +227,7 @@ namespace Commander.Fody
                 initializeMethod.Body.Variables.Add(vDef);
             }
             var instructions = initializeMethod.Body.Instructions;
-            Instruction returnInst;
-            if (instructions.Count == 0)
-            {
-                returnInst = Instruction.Create(OpCodes.Ret);
-                instructions.Add(returnInst);
-            }
-            else
-            {
-                returnInst = instructions.GetLastInstructionWhere(inst => inst.OpCode == OpCodes.Ret);
-                if (returnInst == null)
-                {
-                    returnInst = Instruction.Create(OpCodes.Ret);
-                    instructions.Add(returnInst);
-                }
-            }
+            var returnInst = GetOrCreateLastReturnInstruction(initializeMethod);
 
             Instruction blockEnd = Instruction.Create(OpCodes.Nop);
 
@@ -282,7 +256,7 @@ namespace Commander.Fody
                 instructions.BeforeInstruction(inst => inst == blockEnd,
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldarg_0),
-                    Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single()),
+                    Instruction.Create(OpCodes.Ldftn, onExecuteMethod),
                     Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
                     Instruction.Create(OpCodes.Newobj, commandCtor),
                     Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
@@ -309,6 +283,67 @@ namespace Commander.Fody
                     );
             }            
             return true;
+        }
+
+        public static Instruction GetOrCreateLastReturnInstruction(MethodDefinition initializeMethod)
+        {
+            var instructions = initializeMethod.Body.Instructions;
+            Instruction returnInst;
+            if (instructions.Count == 0)
+            {
+                returnInst = Instruction.Create(OpCodes.Ret);
+                instructions.Add(returnInst);
+            }
+            else
+            {
+                returnInst = instructions.GetLastInstructionWhere(inst => inst.OpCode == OpCodes.Ret);
+                if (returnInst == null)
+                {
+                    returnInst = Instruction.Create(OpCodes.Ret);
+                    instructions.Add(returnInst);
+                }
+            }
+            return returnInst;
+        }
+
+        public void InjectCommandInitializationWithNestedCommand(MethodDefinition initializeMethod)
+        {
+            foreach (var commandData in Commands.Values)
+            {
+                try
+                {
+                    var processor = new NestedCommandInjectionTypeProcessor(commandData, initializeMethod,  Type, ModuleWeaver);
+                    processor.Execute();
+                }
+                catch (Exception ex)
+                {
+                    Assets.Log.Error(ex);                    
+                }
+            }
+        }
+
+        public void InjectCommandInitializationWithDelegateCommand(MethodDefinition initializeMethod)
+        {
+            foreach (var commandData in Commands.Values)
+            {
+                try
+                {
+                    Assets.Log.Info("Trying to add initialization for command: {0}.", commandData.CommandName);
+                    if (TryAddCommandPropertyInitialization(initializeMethod, commandData))
+                    {
+                        Assets.Log.Info("Successfully added initialization for command: {0}.",
+                            commandData.CommandName);
+                    }
+                    else
+                    {
+                        Assets.Log.Warning("Failed to add initialization for command: {0}.", commandData.CommandName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Assets.Log.Error(ex);
+                }
+            }
         }
 
         public void AddInitializationToConstructors(MethodDefinition initMethod)

@@ -68,6 +68,7 @@
     <Compile Include="IFodyLogger.cs" />
     <Compile Include="JetBrains.Annotations.cs" />
     <Compile Include="ModuleWeaver.cs" />
+    <Compile Include="NestedCommandInjectionTypeProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeNode.cs" />
     <Compile Include="TypeProcessor.cs" />

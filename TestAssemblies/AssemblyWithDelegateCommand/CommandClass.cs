@@ -64,6 +64,8 @@ public class ExampleCommandClassWithInitializer
     public ICommand TestCommand { get; set; }
     public ICommand SubmitCommand { get; set; }
     public ICommand NullCommand { get; set; }
+    public ICommand NestedCommand { get; set; }
+
     public void OnTestCommand()
     {        
     }
@@ -75,5 +77,40 @@ public class ExampleCommandClassWithInitializer
 
     public void OnSubmit()
     {        
+    }
+
+    public bool CanExecuteNestedCommand()
+    {
+        return true;
+    }
+
+    public void OnExecuteNestedCommand()
+    {        
+    }
+
+    private class NestedCommandImplementation : ICommand
+    {
+        private readonly ExampleCommandClassWithInitializer _owner;
+
+        public NestedCommandImplementation(ExampleCommandClassWithInitializer owner)
+        {
+            _owner = owner;
+        }
+
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public void Execute(object parameter)
+        {
+            _owner.OnExecuteNestedCommand();
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return _owner.CanExecuteNestedCommand();
+        }        
     }
 }

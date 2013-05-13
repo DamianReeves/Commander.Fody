@@ -20,8 +20,13 @@ namespace Commander.Fody
         private readonly TypeReference _objectTypeReference;
         private readonly TypeReference _booleanTypeReference;
         private readonly TypeReference _iCommandTypeReference;
+        private readonly TypeReference _commandManagerTypeReference;
         private readonly TypeReference _funcOfBoolTypeReference;
+        private readonly TypeReference _eventHandlerTypeReference;
         private readonly MethodReference _funcOfBoolConstructorReference;
+        private readonly MethodReference _objectConstructorReference;
+        private readonly MethodReference _commandManagerAddRequerySuggestedMethodReference;
+        private readonly MethodReference _commandManagerRemoveRequerySuggestedMethodReference;
         private readonly IList<MethodReference> _commandImplementationConstructors;
 
         public Assets([NotNull] ModuleDefinition moduleDefinition, [NotNull] IFodyLogger log)
@@ -40,7 +45,7 @@ namespace Commander.Fody
 
             _stringTypeReference = moduleDefinition.TypeSystem.String;
             _voidTypeReference = moduleDefinition.TypeSystem.Void;
-            _objectTypeReference = moduleDefinition.TypeSystem.Object;
+            _objectTypeReference = moduleDefinition.TypeSystem.Object;            
             _booleanTypeReference = moduleDefinition.TypeSystem.Boolean;
 
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
@@ -49,6 +54,18 @@ namespace Commander.Fody
 
             var systemDefinition = assemblyResolver.Resolve("System");
             var systemTypes = systemDefinition.MainModule.Types;
+
+            var objectDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Object");
+            if (objectDefinition == null)
+            {
+                //ExecuteWinRT();
+                //return;
+            }
+            var constructorDefinition = objectDefinition.Methods.First(x => x.IsConstructor);
+            _objectConstructorReference = ModuleDefinition.Import(constructorDefinition);
+
+            var eventHandlerDefinition = msCoreTypes.First(x => x.Name == "EventHandler");
+            _eventHandlerTypeReference = ModuleDefinition.Import(eventHandlerDefinition);
 
             var actionDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Action");
             if (actionDefinition == null)
@@ -89,6 +106,18 @@ namespace Commander.Fody
             {
                 const string message = "Could not find type System.Windows.Input.ICommand.";
                 throw new WeavingException(message);
+            }
+            var commandManagerDefinition = presentationCoreTypes.FirstOrDefault(x => x.Name == "CommandManager");
+            if (commandManagerDefinition == null)
+            {
+                commandManagerDefinition = systemTypes.FirstOrDefault(x => x.Name == "CommandManager");
+            }
+            _commandManagerTypeReference = ModuleDefinition.Import(commandManagerDefinition);
+            if (commandManagerDefinition != null && _commandManagerTypeReference != null)
+            {
+                var requeryEvent = commandManagerDefinition.Resolve().Events.Single(evt => evt.Name == "RequerySuggested");
+                _commandManagerAddRequerySuggestedMethodReference = ModuleDefinition.Import(requeryEvent.AddMethod);
+                _commandManagerRemoveRequerySuggestedMethodReference = ModuleDefinition.Import(requeryEvent.RemoveMethod);
             }
             _commandImplementationConstructors = GetCommandImplementationConstructors();
         }
@@ -150,6 +179,31 @@ namespace Commander.Fody
         public MethodReference FuncOfBoolConstructorReference
         {
             get { return _funcOfBoolConstructorReference; }
+        }
+
+        public MethodReference ObjectConstructorReference
+        {
+            get { return _objectConstructorReference; }
+        }
+
+        public TypeReference EventHandlerTypeReference
+        {
+            get { return _eventHandlerTypeReference; }
+        }
+
+        public TypeReference CommandManagerTypeReference
+        {
+            get { return _commandManagerTypeReference; }
+        }
+
+        public MethodReference CommandManagerAddRequerySuggestedMethodReference
+        {
+            get { return _commandManagerAddRequerySuggestedMethodReference; }
+        }
+
+        public MethodReference CommandManagerRemoveRequerySuggestedMethodReference
+        {
+            get { return _commandManagerRemoveRequerySuggestedMethodReference; }
         }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()
