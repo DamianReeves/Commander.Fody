@@ -99,11 +99,11 @@ namespace Commander.Fody
             return (type.FullName == "System.Boolean" || type.Name == "bool" );
         }
 
-        public static bool Implements(this TypeDefinition typeDefinition, TypeReference interfaceTypeReference)
+        public static bool Implements(this TypeDefinition typeDefinition, TypeReference interfaceTypeReference, bool nameCheck = true)
         {
             while (typeDefinition != null && typeDefinition.BaseType != null)
             {
-                if (typeDefinition.Interfaces != null && typeDefinition.Interfaces.Contains(interfaceTypeReference))
+                if (typeDefinition.Interfaces != null && typeDefinition.Interfaces.Any(iface=>iface.FullName == interfaceTypeReference.FullName))
                     return true;
 
                 typeDefinition = typeDefinition.BaseType.Resolve();

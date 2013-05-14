@@ -111,8 +111,7 @@ namespace Commander.Fody
             var commandTypes =
                 from @class in AllClasses
                 where !@class.IsAbstract
-                    //&& @class.Implements(ICommandTypeReference)
-                    && @class.Name.EndsWith("Command")
+                    && @class.Implements(TypeReferences.ICommand)
                 select @class;
 
             // TODO: My goodness the implementation below is HACKY... gotta add some smarts
