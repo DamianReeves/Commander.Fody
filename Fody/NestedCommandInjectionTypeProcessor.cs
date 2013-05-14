@@ -276,6 +276,7 @@ namespace Commander.Fody
                 il.Append(Instruction.Create(OpCodes.Stloc_0));
                 il.Append(Instruction.Create(OpCodes.Br_S, returnBlock));
                 il.Append(returnBlock);
+                il.Append(Instruction.Create(OpCodes.Ldloc_0));
                 il.Append(Instruction.Create(OpCodes.Ret));
             }            
         }

@@ -17,8 +17,14 @@ public class CommandClass
     }
 
     [OnCommand("TestCommand2")]
+    [OnCommand("MixedParameterCommand")]
     public void OnTestCommandWithParameter(object parameter)
+    {        
+    }
+
+    [OnCommandCanExecute("MixedParameterCommand")]
+    public bool CanExecuteNoParameter()
     {
-        
+        return true;
     }
 }
