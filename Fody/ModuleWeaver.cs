@@ -35,28 +35,10 @@ namespace Commander.Fody
         public void Execute()
         {
             Assets = new Assets(ModuleDefinition, this);
-            ProcessTypes(GetTypesToProcess());
+            var typesProcessor = new ModuleTypesProcessor(this);
+            typesProcessor.Execute(null);
         }
 
-        public IEnumerable<TypeDefinition> GetTypesToProcess()
-        {
-            return ModuleDefinition.GetTypes().Where(x => x.IsClass);
-        }
-
-        public void ProcessTypes(IEnumerable<TypeDefinition> types)
-        {
-            foreach (var type in types)
-            {
-                try
-                {
-                    var typeProcessor = new TypeProcessor(type, this);
-                    typeProcessor.Execute();
-                }
-                catch(Exception ex)
-                {
-                    Assets.Log.Error(ex);
-                }                
-            }
-        }        
+        
     }
 }

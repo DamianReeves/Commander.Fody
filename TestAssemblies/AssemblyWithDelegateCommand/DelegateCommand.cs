@@ -31,6 +31,16 @@ public class DelegateCommand : ICommand
             : (obj => canExecute());
     }
 
+    public DelegateCommand(Action<object> execute, Func<object,bool> canExecute)
+    {
+        if (execute == null)
+        {
+            throw new ArgumentNullException("execute");
+        }
+        _execute = execute;
+        _canExecute = canExecute ?? (obj => true);
+    }
+
     public void Execute(object parameter)
     {
         _execute(parameter);

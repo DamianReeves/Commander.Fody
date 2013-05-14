@@ -14,22 +14,22 @@ public class OnCommandAttributeReaderTests
     [Test,Ignore]
     public void Simple()
     {
-        var weaver = new ModuleWeaver
-        {
-            ModuleDefinition = DefinitionFinder.FindType<CommandClass>().Module
-        };
-        var logs = new List<string>();
-        weaver.LogInfo = s =>
-        {
-            logs.Add(s);
-            Console.WriteLine(s);
-        };
+        //var weaver = new ModuleWeaver
+        //{
+        //    ModuleDefinition = DefinitionFinder.FindType<CommandClass>().Module
+        //};
+        //var logs = new List<string>();
+        //weaver.LogInfo = s =>
+        //{
+        //    logs.Add(s);
+        //    Console.WriteLine(s);
+        //};
 
-        var type =  DefinitionFinder.FindType<CommandClass>();
-        weaver.ProcessTypes(new []{type});
+        //var type =  DefinitionFinder.FindType<CommandClass>();
+        //weaver.ProcessTypes(new []{type});
 
-        var onCommandLog = logs.Where(s => s.StartsWith("Found OnCommand method")).ToList();
-        onCommandLog.Should().HaveCount(1);
+        //var onCommandLog = logs.Where(s => s.StartsWith("Found OnCommand method")).ToList();
+        //onCommandLog.Should().HaveCount(1);
     }
 
     public class CommandClass

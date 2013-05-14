@@ -67,6 +67,7 @@
     <Compile Include="InstructionListExtensions.cs" />
     <Compile Include="IFodyLogger.cs" />
     <Compile Include="JetBrains.Annotations.cs" />
+    <Compile Include="ModuleProcessorBase.cs" />
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="NestedCommandInjectionTypeProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
