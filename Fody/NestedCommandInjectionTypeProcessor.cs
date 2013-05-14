@@ -128,67 +128,10 @@ namespace Commander.Fody
         internal void ImplementICommandInterface(TypeDefinition commandType)
         {
             commandType.Interfaces.Add(Assets.TypeReferences.ICommand);
-            AddCanExecuteChangedEvent(commandType);
+            Assets.AddCanExecuteChangedEvent(commandType);
             AddCanExecuteMethod(commandType);
             AddExecuteMethod(commandType);
-        }
-
-        internal void AddCanExecuteChangedEvent(TypeDefinition commandType)
-        {
-            var addMethod = CreateCanExecuteChangedAddMethod();
-            commandType.Methods.Add(addMethod);
-
-            var removeMethod = CreateCanExecuteChangedRemoveMethod();
-            commandType.Methods.Add(removeMethod);
-
-            var eventDefinition = new EventDefinition("CanExecuteChanged", EventAttributes.None, Assets.TypeReferences.EventHandler)
-            {
-                AddMethod = addMethod,
-                RemoveMethod = removeMethod
-            };
-            commandType.Events.Add(eventDefinition);
-            
-        }
-
-        internal MethodDefinition CreateCanExecuteChangedAddMethod()
-        {
-            var method = new MethodDefinition("add_CanExecuteChanged",
-                MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.NewSlot |
-                MethodAttributes.Virtual | MethodAttributes.Public,
-                Assets.TypeReferences.Void)
-            {
-                Body = { InitLocals = true }
-            };
-
-            var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, Assets.TypeReferences.EventHandler);
-            method.Parameters.Add(eventHandlerParameter);
-            var il = method.Body.GetILProcessor();
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Call, Assets.CommandManagerAddRequerySuggestedMethodReference));
-            il.Append(il.Create(OpCodes.Nop));
-            il.Append(il.Create(OpCodes.Ret));
-            return method;
-        }
-
-        internal MethodDefinition CreateCanExecuteChangedRemoveMethod()
-        {
-            var method = new MethodDefinition("remove_CanExecuteChanged",
-                MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.NewSlot |
-                MethodAttributes.Virtual | MethodAttributes.Public,
-                Assets.TypeReferences.Void)
-            {
-                Body = {InitLocals = true}
-            };
-
-            var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, Assets.TypeReferences.EventHandler);
-            method.Parameters.Add(eventHandlerParameter);
-            var il = method.Body.GetILProcessor();
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Call, Assets.CommandManagerRemoveRequerySuggestedMethodReference));
-            il.Append(il.Create(OpCodes.Nop));
-            il.Append(il.Create(OpCodes.Ret));
-            return method;
-        }        
+        }           
 
         internal void AddExecuteMethod(TypeDefinition commandType)
         {

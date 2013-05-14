@@ -19,7 +19,7 @@ public class WeaverHelper
 
         GetAssemblyPath();
 
-        var newAssembly = assemblyPath.Replace(".dll", "2.dll");
+        var newAssembly = assemblyPath.Replace(".dll", "2.dll").Replace(".exe","2.exe");
         var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
         var newPdbFileName = Path.ChangeExtension(newAssembly, "pdb");
         File.Copy(assemblyPath, newAssembly, true);
@@ -52,7 +52,7 @@ public class WeaverHelper
 
     void GetAssemblyPath()
     {
-        assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), GetOutputPathValue(), GetAssemblyName() + ".dll");
+        assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), GetOutputPathValue(), GetAssemblyName() + GetOuputExtension());
     }
 
     string GetAssemblyName()
@@ -82,5 +82,21 @@ public class WeaverHelper
         return outputPathValue;
     }
 
+    string GetOuputExtension()
+    {
+        var xDocument = XDocument.Load(projectPath);
+        xDocument.StripNamespace();
+        var outputTypeValue = (
+            from propertyGroup in xDocument.Descendants("PropertyGroup")
+            from outputType in propertyGroup.Descendants("OutputType")
+            select outputType.Value).First();
+        switch (outputTypeValue)
+        {
+            case "WinExe":
+                return ".exe";
+            default:
+                return ".dll";
+        }
+    }
 
 }

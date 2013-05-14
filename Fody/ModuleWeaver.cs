@@ -40,8 +40,16 @@ namespace Commander.Fody
         public void Execute()
         {
             Assets = new Assets(this);
-            var typesProcessor = new ModuleTypesProcessor(this);
-            typesProcessor.Execute();
+            var processors = new ModuleProcessorBase[]
+            {
+                new ClassInjectionProcessor(this), 
+                new ModuleTypesProcessor(this)
+            };
+
+            foreach (var processor in processors)
+            {
+                processor.Execute();
+            }
         }
 
         

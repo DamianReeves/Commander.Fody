@@ -21,7 +21,9 @@ namespace Commander.Fody
         private readonly MethodReference _objectConstructorReference;
         private readonly MethodReference _commandManagerAddRequerySuggestedMethodReference;
         private readonly MethodReference _commandManagerRemoveRequerySuggestedMethodReference;
-        private readonly IList<MethodReference> _commandImplementationConstructors;
+        private readonly MethodReference _actionOfTInvokeReference;
+        private readonly MethodReference _argumentNullExceptionConstructorReference;
+        private readonly IList<MethodReference> _commandImplementationConstructors;        
 
         public Assets([NotNull] ModuleWeaver moduleWeaver)
         {
@@ -41,10 +43,11 @@ namespace Commander.Fody
             _objectConstructorReference = ModuleDefinition.Import(constructorDefinition);
             var actionConstructor = TypeDefinitions.Action.Methods.First(x => x.IsConstructor);
             ActionConstructorReference = ModuleDefinition.Import(actionConstructor);
+            var actionOfTInvokerDefinition = TypeDefinitions.ActionOfT.Methods.First(x => x.Name == "Invoke");
+            _actionOfTInvokeReference = ModuleDefinition.Import(actionOfTInvokerDefinition);
+            var funcConstructor = TypeDefinitions.FuncOfT.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
+            _funcOfBoolConstructorReference = ModuleDefinition.Import(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);                       
 
-            var funcConstructor = TypeDefinitions.FuncOfBool.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
-            _funcOfBoolConstructorReference = ModuleDefinition.Import(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);            
-            
             if (TypeDefinitions.CommandManager != null)
             {
                 var requeryEvent = TypeDefinitions.CommandManager.Resolve().Events.Single(evt => evt.Name == "RequerySuggested");
@@ -52,6 +55,11 @@ namespace Commander.Fody
                 _commandManagerRemoveRequerySuggestedMethodReference = ModuleDefinition.Import(requeryEvent.RemoveMethod);
             }
             _commandImplementationConstructors = GetCommandImplementationConstructors();
+
+            constructorDefinition =
+                TypeDefinitions.ArgumentNullException.Methods.Single(
+                    x => x.IsConstructor && x.HasParameters && x.Parameters.Count == 1);
+            _argumentNullExceptionConstructorReference = ModuleDefinition.Import(constructorDefinition);
         }
         
         public ModuleDefinition ModuleDefinition
@@ -104,7 +112,17 @@ namespace Commander.Fody
         public MethodReference CommandManagerRemoveRequerySuggestedMethodReference
         {
             get { return _commandManagerRemoveRequerySuggestedMethodReference; }
-        }        
+        }
+
+        public MethodReference ActionOfTInvokeReference
+        {
+            get { return _actionOfTInvokeReference; }
+        }
+
+        public MethodReference ArgumentNullExceptionConstructorReference
+        {
+            get { return _argumentNullExceptionConstructorReference; }
+        }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()
         {

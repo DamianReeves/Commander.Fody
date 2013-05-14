@@ -71,6 +71,7 @@
     <Compile Include="Verifier.cs" />
     <Compile Include="VersionReader.cs" />
     <Compile Include="WeaverHelper.cs" />
+    <Compile Include="WpfMvvmSampleTests.cs" />
     <Compile Include="XmlExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
