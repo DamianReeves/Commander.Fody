@@ -9,6 +9,7 @@ namespace Commander.Fody
     public abstract class ModuleProcessorBase
     {
         [NotNull] private readonly ModuleWeaver _moduleWeaver;
+        [NotNull]private readonly ModuleWeaverSettings _settings;
         [NotNull] private readonly Assets _assets;
         [NotNull] private readonly ModuleDefinition _moduleDefinition;
 
@@ -22,11 +23,17 @@ namespace Commander.Fody
             _moduleWeaver = moduleWeaver;
             _assets = _moduleWeaver.Assets;
             _moduleDefinition = _moduleWeaver.ModuleDefinition;
+            _settings = _moduleWeaver.Settings;
         }
 
         public Assets Assets
         {
             get { return _assets; }
+        }
+
+        public ModuleWeaverSettings Settings
+        {
+            get { return _settings; }
         }
 
         public ModuleWeaver ModuleWeaver { get { return _moduleWeaver; } }

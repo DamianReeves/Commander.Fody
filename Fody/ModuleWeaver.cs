@@ -21,6 +21,7 @@ namespace Commander.Fody
 
         // Will contain the full element XML from FodyWeavers.xml. OPTIONAL
         public XElement Config { get; set; }
+        public ModuleWeaverSettings Settings { get; set; }
 
         public Action<string> LogInfo { get; set; }
         public Action<string> LogWarning { get; set; }
@@ -30,28 +31,38 @@ namespace Commander.Fody
 
         public ModuleDefinition ModuleDefinition { get; set; }
         public IAssemblyResolver AssemblyResolver { get; set; }
-        public Assets Assets { get; private set; }
-
-        public virtual IEnumerable<TypeDefinition> GetTypes()
-        {
-            return ModuleDefinition.GetTypes();
-        }
+        public Assets Assets { get; private set; }        
 
         public void Execute()
         {
-            Assets = new Assets(this);
-            var processors = new ModuleProcessorBase[]
-            {
-                new ClassInjectionProcessor(this), 
-                new ModuleTypesProcessor(this)
-            };
+            Setup();
+            var processors = GetProcessors();
+            ExecuteProcessors(processors);
+        }
 
+        private static void ExecuteProcessors(IEnumerable<ModuleProcessorBase> processors)
+        {
             foreach (var processor in processors)
             {
                 processor.Execute();
             }
         }
 
-        
+        private IEnumerable<ModuleProcessorBase> GetProcessors()
+        {
+            var processors = new ModuleProcessorBase[]
+            {
+                new CommandAttributeScanner(this),
+                new ClassInjectionProcessor(this),
+                new ModuleTypesProcessor(this)
+            };
+            return processors;
+        }
+
+        private void Setup()
+        {
+            Settings = new ModuleWeaverSettings(Config);
+            Assets = new Assets(this);
+        }
     }
 }

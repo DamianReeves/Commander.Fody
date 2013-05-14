@@ -98,7 +98,7 @@ namespace Commander.Fody
                     , method
                     , commandName
                     , Type.Name);
-                    var command = Commands.GetOrAdd(commandName, name => new CommandData(name));    
+                    var command = Commands.GetOrAdd(commandName, name => new CommandData(Type,name));    
                     command.OnExecuteMethods.Add(method);
                 }
             }
@@ -121,7 +121,6 @@ namespace Commander.Fody
                     continue;
                 }
 
-
                 // Find OnCommandCanExecute methods where name is given
                 var attributes =
                     method.CustomAttributes
@@ -136,7 +135,7 @@ namespace Commander.Fody
                     , method
                     , commandName
                     , Type.Name);
-                    var command = Commands.GetOrAdd(commandName, name => new CommandData(name));
+                    var command = Commands.GetOrAdd(commandName, name => new CommandData(Type, name));
                     command.CanExecuteMethods.Add(method);
                 }
             }

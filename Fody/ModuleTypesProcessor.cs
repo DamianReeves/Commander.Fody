@@ -14,13 +14,9 @@ namespace Commander.Fody
 
         public override void Execute()
         {
-            ProcessTypes(GetTypesToProcess());
-        }
-
-        public virtual IEnumerable<TypeDefinition> GetTypesToProcess()
-        {
-            return ModuleWeaver.GetTypes().Where(x => x.IsClass);
-        }
+            var typesToProcess = Settings.GetTypesToProcess(ModuleWeaver);
+            ProcessTypes(typesToProcess);
+        }        
 
         public void ProcessTypes(IEnumerable<TypeDefinition> types)
         {

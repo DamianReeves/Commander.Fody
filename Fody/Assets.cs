@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -10,12 +11,12 @@ namespace Commander.Fody
 {
     public class Assets
     {                
-
         private readonly Lazy<List<TypeDefinition>> _allClasses;
         private readonly ModuleDefinition _moduleDefinition;
         private readonly IFodyLogger _log;
         private readonly ITypeReferences _typeReferences;
         private readonly ITypeDefinitions _typeDefinitions;
+        private readonly ConcurrentDictionary<string, CommandData> _commands;
 
         private readonly MethodReference _funcOfBoolConstructorReference;
         private readonly MethodReference _objectConstructorReference;
@@ -33,9 +34,11 @@ namespace Commander.Fody
                 throw new ArgumentNullException("moduleWeaver");
             }
 
+            _commands = new ConcurrentDictionary<string, CommandData>();
             _moduleDefinition = moduleWeaver.ModuleDefinition;
             _log = moduleWeaver;
-            _allClasses = new Lazy<List<TypeDefinition>>(()=> moduleWeaver.GetTypes().Where(x => x.IsClass).ToList());
+            var settings = moduleWeaver.Settings;
+            _allClasses = new Lazy<List<TypeDefinition>>(()=> settings.GetAllTypes(moduleWeaver).ToList());
             var types = new Types(moduleWeaver);
             _typeReferences = types;
             _typeDefinitions = types;
@@ -130,6 +133,11 @@ namespace Commander.Fody
         public MethodReference PredicateOfTInvokeReference
         {
             get { return _predicateOfTInvokeReference; }
+        }
+
+        public ConcurrentDictionary<string, CommandData> Commands
+        {
+            get { return _commands; }
         }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()
