@@ -12,139 +12,32 @@ namespace Commander.Fody
     public class TypeProcessor : TypeProcessorBase
     {
         // TODO: Eventually change this to be configurable
-        public const string OnCommandAttributeName = "OnCommandAttribute";
-        public const string OnCommandCanExecuteAttributeName = "OnCommandCanExecuteAttribute";
         private const string InitializerMethodName = "<Commander_Fody>InitializeCommands";
-
-        private readonly ConcurrentDictionary<string, CommandData> _commands;
-
+        private readonly List<CommandData> _commands;
         public TypeProcessor(TypeDefinition type, ModuleWeaver moduleWeaver) : base(type, moduleWeaver)
         {
-            _commands = new ConcurrentDictionary<string, CommandData>();
-        }
+            _commands = Assets.Commands.Values.Where(cmd => cmd.DeclaringType.FullName == type.FullName).ToList();
+        }        
 
-        public ConcurrentDictionary<string, CommandData> Commands
+        public List<CommandData> Commands
         {
             get { return _commands; }
         }
 
         public override void Execute()
         {
-            ScanForOnCommandAttribute();
-            ScanForOnCommandCanExecuteAttribute();
             InjectCommandProperties();
+
             if (Commands.Count > 0)
             {
                 InjectCommandInitialization();
             }            
         }        
-
-        public IEnumerable<MethodDefinition> FindOnCommandMethods(TypeDefinition type)
-        {
-            return type.Methods.Where(method => method.CustomAttributes.ContainsAttribute(OnCommandAttributeName));
-        }
-
-        public IEnumerable<MethodDefinition> FindCommandCanExecuteMethods(TypeDefinition type)
-        {
-            return type.Methods.Where(method => method.CustomAttributes.ContainsAttribute(OnCommandCanExecuteAttributeName));
-        }
-
-        public bool IsValidOnExecuteMethod(MethodDefinition method)
-        {
-            return method.ReturnType == Assets.TypeReferences.Void
-                && (!method.HasParameters
-                    || (method.Parameters.Count == 1 
-                    && !method.Parameters[0].IsOut
-                    && method.Parameters[0].ParameterType.Matches(Assets.TypeReferences.Object)));
-        }
-
-        public bool IsValidCanExecuteMethod(MethodDefinition method)
-        {
-            return method.ReturnType == Assets.TypeReferences.Boolean
-                && (!method.HasParameters
-                    || (method.Parameters.Count == 1
-                    && !method.Parameters[0].IsOut
-                    && method.Parameters[0].ParameterType.Matches(Assets.TypeReferences.Object)));
-        }
-
-        internal void ScanForOnCommandAttribute()
-        {
-            var methods = FindOnCommandMethods(Type);
-            foreach (var method in methods)
-            {
-                if (!IsValidOnExecuteMethod(method))
-                {
-                    Assets.Log.Warning("Method: {0} is not a valid OnExecute method for ICommand binding..", method);
-                    Assets.Log.Warning("Method: {0} parameter info:", method);
-                    for (int index = 0; index < method.Parameters.Count; index++)
-                    {
-                        var parameter = method.Parameters[index];
-                        Assets.Log.Info("Parameter[{0}]: {1}", index, parameter);
-                    }
-                    continue;
-                }
-
-                // Find OnCommand methods where name is given
-                var attributes =
-                    method.CustomAttributes
-                    .Where(x => x.IsCustomAttribute(OnCommandAttributeName))
-                    .Where(x => x.HasConstructorArguments
-                        && x.ConstructorArguments.First().Type.FullNameMatches(Assets.TypeReferences.String));
-
-                foreach (var attribute in attributes)
-                {                    
-                    var commandName = (string)attribute.ConstructorArguments[0].Value;
-                    Assets.Log.Info("Found OnCommand method {0} for command {1} on type {2}"
-                    , method
-                    , commandName
-                    , Type.Name);
-                    var command = Commands.GetOrAdd(commandName, name => new CommandData(Type,name));    
-                    command.OnExecuteMethods.Add(method);
-                }
-            }
-        }
-
-        internal void ScanForOnCommandCanExecuteAttribute()
-        {
-            var methods = FindCommandCanExecuteMethods(Type);
-            foreach (var method in methods)
-            {
-                if (!IsValidCanExecuteMethod(method))
-                {
-                    Assets.Log.Warning("Method: {0} is not a valid CanExecute method for ICommand binding.", method);
-                    Assets.Log.Warning("Method: {0} parameter info:", method);
-                    for (int index = 0; index < method.Parameters.Count; index++)
-                    {
-                        var parameter = method.Parameters[index];
-                        Assets.Log.Info("Parameter[{0}]: {1}", index, parameter);
-                    }
-                    continue;
-                }
-
-                // Find OnCommandCanExecute methods where name is given
-                var attributes =
-                    method.CustomAttributes
-                    .Where(x => x.IsCustomAttribute(OnCommandCanExecuteAttributeName))
-                    .Where(x => x.HasConstructorArguments
-                        && x.ConstructorArguments.First().Type.FullNameMatches(Assets.TypeReferences.String));
-
-                foreach (var attribute in attributes)
-                {
-                    var commandName = (string)attribute.ConstructorArguments[0].Value;
-                    Assets.Log.Info("Found OnCommandCanExecute method {0} for command {1} on type {2}"
-                    , method
-                    , commandName
-                    , Type.Name);
-                    var command = Commands.GetOrAdd(commandName, name => new CommandData(Type, name));
-                    command.CanExecuteMethods.Add(method);
-                }
-            }
-        }  
    
         internal void InjectCommandProperties()
         {
             var commandTypeReference = Assets.TypeReferences.ICommand;
-            foreach (var commandData in Commands.Values)
+            foreach (var commandData in Commands)
             {
                 try
                 {
@@ -213,8 +106,8 @@ namespace Commander.Fody
 
         public bool TryAddCommandPropertyInitialization(MethodDefinition initializeMethod, CommandData commandData)
         {
-            var commandCtor = Assets.CommandImplementationConstructors.FirstOrDefault();
-            if (commandCtor == null)
+            var commandConstructor = Assets.CommandImplementationConstructors.FirstOrDefault();
+            if (commandConstructor == null)
             {
                 Assets.Log.Info("Skipped command initialization for command {0}, because there is no eligible command implementation to bind to.", commandData);
                 return false;
@@ -257,7 +150,7 @@ namespace Commander.Fody
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldftn, onExecuteMethod),
                     Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
-                    Instruction.Create(OpCodes.Newobj, commandCtor),
+                    Instruction.Create(OpCodes.Newobj, commandConstructor),
                     Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
                     Instruction.Create(OpCodes.Nop),
                     Instruction.Create(OpCodes.Nop)
@@ -265,7 +158,7 @@ namespace Commander.Fody
             }
             else
             {
-                commandCtor = Assets.CommandImplementationConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
+                commandConstructor = Assets.CommandImplementationConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
                 instructions.BeforeInstruction(inst => inst == blockEnd,
                     Instruction.Create(OpCodes.Nop),
                     Instruction.Create(OpCodes.Ldarg_0),
@@ -275,7 +168,7 @@ namespace Commander.Fody
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldftn, commandData.CanExecuteMethods.Single()),
                     Instruction.Create(OpCodes.Newobj, Assets.FuncOfBoolConstructorReference),
-                    Instruction.Create(OpCodes.Newobj, commandCtor),
+                    Instruction.Create(OpCodes.Newobj, commandConstructor),
                     Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
                     Instruction.Create(OpCodes.Nop),
                     Instruction.Create(OpCodes.Nop)
@@ -307,7 +200,7 @@ namespace Commander.Fody
 
         public void InjectCommandInitializationWithNestedCommand(MethodDefinition initializeMethod)
         {
-            foreach (var commandData in Commands.Values)
+            foreach (var commandData in Commands)
             {
                 try
                 {
@@ -323,7 +216,7 @@ namespace Commander.Fody
 
         public void InjectCommandInitializationWithDelegateCommand(MethodDefinition initializeMethod)
         {
-            foreach (var commandData in Commands.Values)
+            foreach (var commandData in Commands)
             {
                 try
                 {
@@ -347,14 +240,14 @@ namespace Commander.Fody
 
         public void AddInitializationToConstructors(MethodDefinition initMethod)
         {
-            var ctors =
-                from ctor in Type.GetConstructors()
-                where !ctor.IsStatic
-                select ctor;
+            var constructors =
+                from constructor in Type.GetConstructors()
+                where !constructor.IsStatic
+                select constructor;
 
-            foreach (var ctor in ctors)
+            foreach (var constructor in constructors)
             {
-                var instructions = ctor.Body.Instructions;
+                var instructions = constructor.Body.Instructions;
                 var returnInst = instructions.GetLastInstructionWhere(inst => inst.OpCode == OpCodes.Ret);
                 instructions.BeforeInstruction(inst => inst == returnInst
                     , Instruction.Create(OpCodes.Nop)

@@ -13,12 +13,17 @@ namespace Commander.Fody
         }
 
         public override void Execute()
-        {            
+        {
+            foreach (var @class in Assets.AllClasses)
+            {
+                ScanForOnCommandAttribute(@class);
+                ScanForOnCommandCanExecuteAttribute(@class);
+            }
         }
 
         public IEnumerable<MethodDefinition> FindOnCommandMethods(TypeDefinition type)
         {
-            return type.Methods.Where(method => CecilExtensions.ContainsAttribute(method.CustomAttributes, Settings.OnCommandAttributeName, Settings.MatchAttributesByFullName));
+            return type.Methods.Where(method => method.CustomAttributes.ContainsAttribute(Settings.OnCommandAttributeName, Settings.MatchAttributesByFullName));
         }
 
         public IEnumerable<MethodDefinition> FindCommandCanExecuteMethods(TypeDefinition type)
