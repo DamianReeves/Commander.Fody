@@ -55,7 +55,23 @@ namespace Commander.Fody
 
         internal void ApplyConfiguration()
         {
-            
+            var onCommandAttributeName = (string) Config.Attribute("OnCommandAttributeName");
+            if (!String.IsNullOrWhiteSpace(onCommandAttributeName))
+            {
+                OnCommandAttributeName = onCommandAttributeName;
+            }
+
+            var onCommandCanExecuteAttributeName = (string)Config.Attribute("OnCommandCanExecuteAttributeName");
+            if (!String.IsNullOrWhiteSpace(onCommandCanExecuteAttributeName))
+            {
+                OnCommandCanExecuteAttributeName = onCommandCanExecuteAttributeName;
+            }
+
+            var matchAttributesByFullName = (bool?)Config.Attribute("MatchAttributesByFullName");
+            if (matchAttributesByFullName != null)
+            {
+                MatchAttributesByFullName = matchAttributesByFullName.Value;
+            }
         }
     }
 }
