@@ -76,7 +76,7 @@
     <Compile Include="ModuleWeaverSettings.cs" />
     <Compile Include="NestedCommandInjectionTypeProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypeProcessor.cs" />
+    <Compile Include="CommandInjectionTypeProcessor.cs" />
     <Compile Include="TypeProcessorBase.cs" />
     <Compile Include="Types.cs" />
     <Compile Include="WeavingException.cs" />

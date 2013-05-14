@@ -9,12 +9,12 @@ using Mono.Collections.Generic;
 
 namespace Commander.Fody
 {
-    public class TypeProcessor : TypeProcessorBase
+    public class CommandInjectionTypeProcessor : TypeProcessorBase
     {
         // TODO: Eventually change this to be configurable
         private const string InitializerMethodName = "<Commander_Fody>InitializeCommands";
         private readonly List<CommandData> _commands;
-        public TypeProcessor(TypeDefinition type, ModuleWeaver moduleWeaver) : base(type, moduleWeaver)
+        public CommandInjectionTypeProcessor(TypeDefinition type, ModuleWeaver moduleWeaver) : base(type, moduleWeaver)
         {
             _commands = Assets.Commands.Values.Where(cmd => cmd.DeclaringType.FullName == type.FullName).ToList();
         }        

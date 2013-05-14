@@ -24,7 +24,7 @@ namespace Commander.Fody
             {
                 try
                 {
-                    var typeProcessor = new TypeProcessor(type, ModuleWeaver);
+                    var typeProcessor = new CommandInjectionTypeProcessor(type, ModuleWeaver);
                     typeProcessor.Execute();
                 }
                 catch (Exception ex)

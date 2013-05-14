@@ -76,7 +76,7 @@ namespace Commander.Fody
                 method.Body.Variables.Add(vDef);
             }
 
-            // var returnInst = TypeProcessor.GetOrCreateLastReturnInstruction(method);
+            // var returnInst = CommandInjectionTypeProcessor.GetOrCreateLastReturnInstruction(method);
             var instructions = method.Body.Instructions;
             Instruction blockEnd = Instruction.Create(OpCodes.Nop);
 
