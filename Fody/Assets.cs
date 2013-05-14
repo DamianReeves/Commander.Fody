@@ -22,6 +22,7 @@ namespace Commander.Fody
         private readonly MethodReference _commandManagerAddRequerySuggestedMethodReference;
         private readonly MethodReference _commandManagerRemoveRequerySuggestedMethodReference;
         private readonly MethodReference _actionOfTInvokeReference;
+        private readonly MethodReference _predicateOfTInvokeReference;
         private readonly MethodReference _argumentNullExceptionConstructorReference;
         private readonly IList<MethodReference> _commandImplementationConstructors;        
 
@@ -46,7 +47,9 @@ namespace Commander.Fody
             var actionOfTInvokerDefinition = TypeDefinitions.ActionOfT.Methods.First(x => x.Name == "Invoke");
             _actionOfTInvokeReference = ModuleDefinition.Import(actionOfTInvokerDefinition);
             var funcConstructor = TypeDefinitions.FuncOfT.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
-            _funcOfBoolConstructorReference = ModuleDefinition.Import(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);                       
+            _funcOfBoolConstructorReference = ModuleDefinition.Import(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);
+            var predicateOfTInvokerDefinition = TypeDefinitions.PredicateOfT.Methods.First(x => x.Name == "Invoke");
+            _predicateOfTInvokeReference = ModuleDefinition.Import(predicateOfTInvokerDefinition);
 
             if (TypeDefinitions.CommandManager != null)
             {
@@ -122,6 +125,11 @@ namespace Commander.Fody
         public MethodReference ArgumentNullExceptionConstructorReference
         {
             get { return _argumentNullExceptionConstructorReference; }
+        }
+
+        public MethodReference PredicateOfTInvokeReference
+        {
+            get { return _predicateOfTInvokeReference; }
         }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()

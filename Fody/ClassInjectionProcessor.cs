@@ -133,6 +133,7 @@ namespace Commander.Fody
             il.Append(il.Create(OpCodes.Brtrue_S, assignmentBlock));
 
             // Throw ArgumentNullException 
+            // throw new ArgumentNullException("execute");
             il.Append(il.Create(OpCodes.Ldstr,"execute"));
             il.Append(il.Create(OpCodes.Newobj, Assets.ArgumentNullExceptionConstructorReference));
             il.Append(il.Create(OpCodes.Throw));
@@ -194,12 +195,13 @@ namespace Commander.Fody
             method.Parameters.Add(commandParameter);
 
             commandClass.Methods.Add(method);
+            
+            // Get MethodReference for Action<T>::Invoke(T);
             var genericType = new GenericInstanceType(commandClass);
             genericType.GenericArguments.Add(commandClass.GenericParameters[0]);
             var tParameter = genericType.GenericArguments[0];
-
-            var actionInstance = Assets.TypeReferences.ActionOfT.MakeGenericInstanceType(tParameter);
             var invoker = Assets.ActionOfTInvokeReference.MakeHostInstanceGeneric(tParameter);
+
             var il = method.Body.GetILProcessor();
             var start = Instruction.Create(OpCodes.Nop);
             il.Append(start);
@@ -212,9 +214,9 @@ namespace Commander.Fody
             il.Append(Instruction.Create(OpCodes.Ret));
         }
 
-        internal void AddCanExecuteMethod(TypeDefinition commandType)
+        internal void AddCanExecuteMethod(TypeDefinition commandClass)
         {
-            var field = commandType.Fields[0];
+            var field = commandClass.Fields.Single(x => x.Name == "_canExecute");
 
             var method = new MethodDefinition("CanExecute",
                 MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot |
@@ -229,39 +231,38 @@ namespace Commander.Fody
             var returnVariable = new VariableDefinition(Assets.TypeReferences.Boolean);
             method.Body.Variables.Add(returnVariable);
 
-            commandType.Methods.Add(method);
+            commandClass.Methods.Add(method);
+
+            // Get MethodReference for Predicate<T>::Invoke(T);
+            var genericType = new GenericInstanceType(commandClass);
+            genericType.GenericArguments.Add(commandClass.GenericParameters[0]);
+            var tParameter = genericType.GenericArguments[0];
+            var invoker = Assets.PredicateOfTInvokeReference.MakeHostInstanceGeneric(tParameter);
 
             var il = method.Body.GetILProcessor();
             il.Append(Instruction.Create(OpCodes.Nop));
-            //if (Command.CanExecuteMethods.Count == 0)
-            //{
+            
             var returnBlock = Instruction.Create(OpCodes.Ldloc_0);
-            il.Append(Instruction.Create(OpCodes.Ldc_I4_1));
-            il.Append(Instruction.Create(OpCodes.Stloc_0));
-            il.Append(Instruction.Create(OpCodes.Br_S, returnBlock));
+            var isNullBlock = il.Create(OpCodes.Ldc_I4_1);
+            var storeAndBranchBlock = il.Create(OpCodes.Nop);
+
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldfld, field));
+            il.Append(il.Create(OpCodes.Brfalse_S, isNullBlock));
+
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldfld, field));
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(Instruction.Create(OpCodes.Unbox_Any, tParameter));
+            il.Append(Instruction.Create(OpCodes.Callvirt, invoker));
+            il.Append(il.Create(OpCodes.Br_S, storeAndBranchBlock));
+
+            il.Append(isNullBlock);
+            il.Append(storeAndBranchBlock);
+            il.Append(il.Create(OpCodes.Stloc_0));
+            il.Append(il.Create(OpCodes.Br_S, returnBlock));
             il.Append(returnBlock);
             il.Append(Instruction.Create(OpCodes.Ret));
-            //}
-            //else
-            //{
-            //    var canExecuteMethod = Command.CanExecuteMethods.Single();
-            //    var returnBlock = Instruction.Create(OpCodes.Nop);
-            //    il.Append(Instruction.Create(OpCodes.Ldarg_0));
-            //    il.Append(Instruction.Create(OpCodes.Ldfld, field));
-            //    if (canExecuteMethod.IsVirtual)
-            //    {
-            //        il.Append(Instruction.Create(OpCodes.Callvirt, canExecuteMethod));
-            //    }
-            //    else
-            //    {
-            //        il.Append(Instruction.Create(OpCodes.Call, canExecuteMethod));
-            //    }
-            //    il.Append(Instruction.Create(OpCodes.Stloc_0));
-            //    il.Append(Instruction.Create(OpCodes.Br_S, returnBlock));
-            //    il.Append(returnBlock);
-            //    il.Append(Instruction.Create(OpCodes.Ldloc_0));
-            //    il.Append(Instruction.Create(OpCodes.Ret));
-            //}
         }
     }
 }
