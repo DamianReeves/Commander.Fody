@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="CommandClass.cs" />
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="ExampleCommandClassWithInitializer.cs" />
     <Compile Include="OnCommandAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

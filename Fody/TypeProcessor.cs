@@ -51,20 +51,20 @@ namespace Commander.Fody
 
         public bool IsValidOnExecuteMethod(MethodDefinition method)
         {
-            return method.ReturnType == Assets.VoidTypeReference
+            return method.ReturnType == Assets.TypeReferences.Void
                 && (!method.HasParameters
                     || (method.Parameters.Count == 1 
                     && !method.Parameters[0].IsOut
-                    && method.Parameters[0].ParameterType.Matches(Assets.ObjectTypeReference)));
+                    && method.Parameters[0].ParameterType.Matches(Assets.TypeReferences.Object)));
         }
 
         public bool IsValidCanExecuteMethod(MethodDefinition method)
         {
-            return method.ReturnType == Assets.BooleanTypeReference
+            return method.ReturnType == Assets.TypeReferences.Boolean
                 && (!method.HasParameters
                     || (method.Parameters.Count == 1
                     && !method.Parameters[0].IsOut
-                    && method.Parameters[0].ParameterType.Matches(Assets.ObjectTypeReference)));
+                    && method.Parameters[0].ParameterType.Matches(Assets.TypeReferences.Object)));
         }
 
         internal void ScanForOnCommandAttribute()
@@ -88,8 +88,8 @@ namespace Commander.Fody
                 var attributes =
                     method.CustomAttributes
                     .Where(x => x.IsCustomAttribute(OnCommandAttributeName))
-                    .Where(x => x.HasConstructorArguments 
-                        && x.ConstructorArguments.First().Type.FullNameMatches(Assets.StringTypeReference));
+                    .Where(x => x.HasConstructorArguments
+                        && x.ConstructorArguments.First().Type.FullNameMatches(Assets.TypeReferences.String));
 
                 foreach (var attribute in attributes)
                 {                    
@@ -127,7 +127,7 @@ namespace Commander.Fody
                     method.CustomAttributes
                     .Where(x => x.IsCustomAttribute(OnCommandCanExecuteAttributeName))
                     .Where(x => x.HasConstructorArguments
-                        && x.ConstructorArguments.First().Type.FullNameMatches(Assets.StringTypeReference));
+                        && x.ConstructorArguments.First().Type.FullNameMatches(Assets.TypeReferences.String));
 
                 foreach (var attribute in attributes)
                 {
@@ -144,7 +144,7 @@ namespace Commander.Fody
    
         internal void InjectCommandProperties()
         {
-            var commandTypeReference = Assets.ICommandTypeReference;
+            var commandTypeReference = Assets.TypeReferences.ICommand;
             foreach (var commandData in Commands.Values)
             {
                 try
@@ -197,7 +197,7 @@ namespace Commander.Fody
             initializeMethod = new MethodDefinition(
                 InitializerMethodName
                 , MethodAttributes.Private | MethodAttributes.SpecialName
-                , Assets.VoidTypeReference)
+                , Assets.TypeReferences.Void)
             {
                 HasThis = true,
                 Body = { InitLocals = true }

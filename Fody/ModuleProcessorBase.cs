@@ -28,39 +28,6 @@ namespace Commander.Fody
         }
 
         public ModuleWeaver ModuleWeaver { get { return _moduleWeaver; } }
-        public abstract void Execute(IEnumerable<TypeDefinition> types);
-    }
-
-    public class ModuleTypesProcessor : ModuleProcessorBase
-    {
-        public ModuleTypesProcessor([NotNull] ModuleWeaver moduleWeaver) : base(moduleWeaver)
-        {
-        }
-
-        public override void Execute(IEnumerable<TypeDefinition> types)
-        {
-            ProcessTypes(types ?? GetTypesToProcess());
-        }
-
-        public IEnumerable<TypeDefinition> GetTypesToProcess()
-        {
-            return Assets.ModuleDefinition.GetTypes().Where(x => x.IsClass);
-        }
-
-        public void ProcessTypes(IEnumerable<TypeDefinition> types)
-        {
-            foreach (var type in types)
-            {
-                try
-                {
-                    var typeProcessor = new TypeProcessor(type, ModuleWeaver);
-                    typeProcessor.Execute();
-                }
-                catch (Exception ex)
-                {
-                    Assets.Log.Error(ex);
-                }
-            }
-        }        
+        public abstract void Execute();        
     }
 }

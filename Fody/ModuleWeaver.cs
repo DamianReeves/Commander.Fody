@@ -32,11 +32,16 @@ namespace Commander.Fody
         public IAssemblyResolver AssemblyResolver { get; set; }
         public Assets Assets { get; private set; }
 
+        public virtual IEnumerable<TypeDefinition> GetTypes()
+        {
+            return ModuleDefinition.GetTypes();
+        }
+
         public void Execute()
         {
-            Assets = new Assets(ModuleDefinition, this);
+            Assets = new Assets(this);
             var typesProcessor = new ModuleTypesProcessor(this);
-            typesProcessor.Execute(null);
+            typesProcessor.Execute();
         }
 
         

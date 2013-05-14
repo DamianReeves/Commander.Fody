@@ -61,7 +61,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyExtensions.cs" />
-    <Compile Include="AttributeReaders\OnCommandAttributeReaderTests.cs" />
     <Compile Include="Attributes\OnCommandAttribute.cs" />
     <Compile Include="BaseTaskTests.cs" />
     <Compile Include="AssemblyWithDelegateCommandDotNet4Tests.cs" />
@@ -82,6 +81,9 @@
       <Project>{d2b2dd97-8d91-4cd7-8820-c76fe5f20e71}</Project>
       <Name>Fody</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="AttributeReaders\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

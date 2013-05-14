@@ -53,7 +53,7 @@ namespace Commander.Fody
             var name = string.Format("<>__NestedCommandImplementationFor" + Command.CommandName);
             var commandType = new TypeDefinition(Type.Namespace, name, DefaultTypeAttributesForCommand)
             {
-                BaseType = Assets.ObjectTypeReference
+                BaseType = Assets.TypeReferences.Object
             };
 
             var field = commandType.AddField(Type, OwnerFieldName);
@@ -108,7 +108,7 @@ namespace Commander.Fody
 
         internal MethodDefinition CreateConstructor(TypeDefinition type)
         {
-            var ctor = new MethodDefinition(".ctor", ConstructorDefaultMethodAttributes, Assets.VoidTypeReference);
+            var ctor = new MethodDefinition(".ctor", ConstructorDefaultMethodAttributes, Assets.TypeReferences.Void);
             var parameter = new ParameterDefinition("owner", ParameterAttributes.None, Type);
             var field = type.Fields[0];
 
@@ -127,7 +127,7 @@ namespace Commander.Fody
 
         internal void ImplementICommandInterface(TypeDefinition commandType)
         {
-            commandType.Interfaces.Add(Assets.ICommandTypeReference);
+            commandType.Interfaces.Add(Assets.TypeReferences.ICommand);
             AddCanExecuteChangedEvent(commandType);
             AddCanExecuteMethod(commandType);
             AddExecuteMethod(commandType);
@@ -141,7 +141,7 @@ namespace Commander.Fody
             var removeMethod = CreateCanExecuteChangedRemoveMethod();
             commandType.Methods.Add(removeMethod);
 
-            var eventDefinition = new EventDefinition("CanExecuteChanged", EventAttributes.None, Assets.EventHandlerTypeReference)
+            var eventDefinition = new EventDefinition("CanExecuteChanged", EventAttributes.None, Assets.TypeReferences.EventHandler)
             {
                 AddMethod = addMethod,
                 RemoveMethod = removeMethod
@@ -155,12 +155,12 @@ namespace Commander.Fody
             var method = new MethodDefinition("add_CanExecuteChanged",
                 MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.NewSlot |
                 MethodAttributes.Virtual | MethodAttributes.Public,
-                Assets.VoidTypeReference)
+                Assets.TypeReferences.Void)
             {
                 Body = { InitLocals = true }
             };
 
-            var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, Assets.EventHandlerTypeReference);
+            var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, Assets.TypeReferences.EventHandler);
             method.Parameters.Add(eventHandlerParameter);
             var il = method.Body.GetILProcessor();
             il.Append(il.Create(OpCodes.Ldarg_1));
@@ -175,12 +175,12 @@ namespace Commander.Fody
             var method = new MethodDefinition("remove_CanExecuteChanged",
                 MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.NewSlot |
                 MethodAttributes.Virtual | MethodAttributes.Public,
-                Assets.VoidTypeReference)
+                Assets.TypeReferences.Void)
             {
                 Body = {InitLocals = true}
             };
 
-            var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None,Assets.EventHandlerTypeReference);
+            var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, Assets.TypeReferences.EventHandler);
             method.Parameters.Add(eventHandlerParameter);
             var il = method.Body.GetILProcessor();
             il.Append(il.Create(OpCodes.Ldarg_1));
@@ -195,12 +195,12 @@ namespace Commander.Fody
             var field = commandType.Fields[0];
             var method = new MethodDefinition("Execute",
                 MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot |
-                MethodAttributes.Virtual, Assets.VoidTypeReference)
+                MethodAttributes.Virtual, Assets.TypeReferences.Void)
             {
                 Body = {InitLocals = true}
             };
 
-            var commandParameter = new ParameterDefinition("parameter", ParameterAttributes.None,Assets.ObjectTypeReference);
+            var commandParameter = new ParameterDefinition("parameter", ParameterAttributes.None, Assets.TypeReferences.Object);
             method.Parameters.Add(commandParameter);
 
             commandType.Methods.Add(method);
@@ -235,15 +235,15 @@ namespace Commander.Fody
 
             var method = new MethodDefinition("CanExecute",
                 MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot |
-                MethodAttributes.Virtual, Assets.BooleanTypeReference)
+                MethodAttributes.Virtual, Assets.TypeReferences.Boolean)
             {
                 Body = {InitLocals = true}
             };
 
-            var commandParameter = new ParameterDefinition("parameter", ParameterAttributes.None, Assets.ObjectTypeReference);
+            var commandParameter = new ParameterDefinition("parameter", ParameterAttributes.None, Assets.TypeReferences.Object);
             method.Parameters.Add(commandParameter);
 
-            var returnVariable = new VariableDefinition(Assets.BooleanTypeReference);
+            var returnVariable = new VariableDefinition(Assets.TypeReferences.Boolean);
             method.Body.Variables.Add(returnVariable);
 
             commandType.Methods.Add(method);
