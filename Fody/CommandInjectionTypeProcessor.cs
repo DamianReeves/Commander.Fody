@@ -63,7 +63,7 @@ namespace Commander.Fody
                 return;
             }            
 
-            var initializeMethod = AddCommandInitializerMethod();
+            var initializeMethod = CreateCommandInitializerMethod();
             if (Assets.CommandImplementationConstructors.Count == 0)
             {
                 if (ModuleWeaver.Settings.FallbackToNestedCommands)
@@ -76,11 +76,16 @@ namespace Commander.Fody
             else
             {
                 InjectCommandInitializationWithDelegateCommand(initializeMethod);     
-            }             
-            AddInitializationToConstructors(initializeMethod);
+            }
+            var wasCommandInitializationInjected = Commands.Any(x => x.CommandInitializationInjected);
+            if (wasCommandInitializationInjected)
+            {
+                Type.Methods.Add(initializeMethod);
+                AddInitializationToConstructors(initializeMethod);
+            }            
         }        
 
-        public MethodDefinition AddCommandInitializerMethod()
+        public MethodDefinition CreateCommandInitializerMethod()
         {
             var initializeMethod = 
                 Type.Methods.FirstOrDefault(x => x.Name == InitializerMethodName);
@@ -102,8 +107,6 @@ namespace Commander.Fody
                 Instruction.Create(OpCodes.Ret)
                 );
 
-            Type.Methods.Add(initializeMethod);
-
             return initializeMethod;
         }
 
@@ -122,61 +125,10 @@ namespace Commander.Fody
                 initializeMethod.Body.Variables.Add(vDef);
             }
             var instructions = initializeMethod.Body.Instructions;
-            var returnInst = GetOrCreateLastReturnInstruction(initializeMethod);
-
-            Instruction blockEnd = Instruction.Create(OpCodes.Nop);
-
-            // Null check
-            // if (Command == null) { ... }
-            instructions.Prepend(
-                Instruction.Create(OpCodes.Nop),
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Call, commandData.CommandProperty.GetMethod),
-                Instruction.Create(OpCodes.Ldnull),
-                Instruction.Create(OpCodes.Ceq),
-                Instruction.Create(OpCodes.Ldc_I4_0),
-                Instruction.Create(OpCodes.Ceq),
-                Instruction.Create(OpCodes.Stloc_0),
-                Instruction.Create(OpCodes.Ldloc_0),
-                Instruction.Create(OpCodes.Brtrue_S, blockEnd),                
-                blockEnd
-                );
-
-            // TODO: Just building up support at this time need to be able to handle more combinations and edge cases
-            var onExecuteMethod = commandData.OnExecuteMethods.Single();
-            var canExecuteMethod = commandData.CanExecuteMethods.FirstOrDefault();
-
-            if (canExecuteMethod == null)
-            {                
-                instructions.BeforeInstruction(inst => inst == blockEnd,
-                    Instruction.Create(OpCodes.Ldarg_0),
-                    Instruction.Create(OpCodes.Ldarg_0),
-                    Instruction.Create(OpCodes.Ldftn, onExecuteMethod),
-                    Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
-                    Instruction.Create(OpCodes.Newobj, commandConstructor),
-                    Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
-                    Instruction.Create(OpCodes.Nop),
-                    Instruction.Create(OpCodes.Nop)
-                    );
-            }
-            else
-            {
-                commandConstructor = Assets.CommandImplementationConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
-                instructions.BeforeInstruction(inst => inst == blockEnd,
-                    Instruction.Create(OpCodes.Nop),
-                    Instruction.Create(OpCodes.Ldarg_0),
-                    Instruction.Create(OpCodes.Ldarg_0),
-                    Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single()),                    
-                    Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference),
-                    Instruction.Create(OpCodes.Ldarg_0),
-                    Instruction.Create(OpCodes.Ldftn, commandData.CanExecuteMethods.Single()),
-                    Instruction.Create(OpCodes.Newobj, Assets.FuncOfBoolConstructorReference),
-                    Instruction.Create(OpCodes.Newobj, commandConstructor),
-                    Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod),
-                    Instruction.Create(OpCodes.Nop),
-                    Instruction.Create(OpCodes.Nop)
-                    );
-            }            
+            GetOrCreateLastReturnInstruction(initializeMethod);
+            var instructionsToAdd = GetCommandInitializationInstructions(commandData).ToArray();
+            instructions.Prepend(instructionsToAdd);
+            commandData.CommandInitializationInjected = true;
             return true;
         }
 
@@ -258,6 +210,71 @@ namespace Commander.Fody
                     , Instruction.Create(OpCodes.Call, initMethod)
                 );
             }
+        }
+
+        private IEnumerable<Instruction> GetCommandInitializationInstructions(CommandData commandData)
+        {
+            Instruction blockEnd = Instruction.Create(OpCodes.Nop);
+            //// Null check
+            //// if (Command == null) { ... }
+            yield return Instruction.Create(OpCodes.Nop);
+            yield return Instruction.Create(OpCodes.Ldarg_0);
+            yield return Instruction.Create(OpCodes.Call, commandData.CommandProperty.GetMethod);
+            yield return Instruction.Create(OpCodes.Ldnull);
+            yield return Instruction.Create(OpCodes.Ceq);
+            yield return Instruction.Create(OpCodes.Ldc_I4_0);
+            yield return Instruction.Create(OpCodes.Ceq);
+            yield return Instruction.Create(OpCodes.Stloc_0);
+            yield return Instruction.Create(OpCodes.Ldloc_0);
+            yield return Instruction.Create(OpCodes.Brtrue_S, blockEnd);
+
+            var canExecuteMethod = commandData.CanExecuteMethods.SingleOrDefault();
+            if (commandData.OnExecuteMethods.Count > 0)
+            {
+                var onExecuteMethod = commandData.OnExecuteMethods[0];
+                MethodReference commandConstructor;
+                if (canExecuteMethod == null)
+                {
+                    commandConstructor = Assets.CommandImplementationConstructors.FirstOrDefault();
+                    yield return Instruction.Create(OpCodes.Ldarg_0);
+                    yield return Instruction.Create(OpCodes.Ldarg_0);
+                    yield return Instruction.Create(OpCodes.Ldftn, onExecuteMethod);
+                    yield return Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference);
+                    yield return Instruction.Create(OpCodes.Newobj, commandConstructor);
+                    yield return Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod);
+                    yield return Instruction.Create(OpCodes.Nop);
+                    yield return Instruction.Create(OpCodes.Nop);
+                }
+                else
+                {
+                    commandConstructor = Assets.CommandImplementationConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
+                    yield return Instruction.Create(OpCodes.Nop);
+                    yield return Instruction.Create(OpCodes.Ldarg_0);
+                    yield return Instruction.Create(OpCodes.Ldarg_0);
+                    yield return Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single());
+                    yield return Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference);
+                    yield return Instruction.Create(OpCodes.Ldarg_0);
+                    yield return Instruction.Create(OpCodes.Ldftn, commandData.CanExecuteMethods.Single());
+                    yield return Instruction.Create(OpCodes.Newobj, Assets.FuncOfBoolConstructorReference);
+                    yield return Instruction.Create(OpCodes.Newobj, commandConstructor);
+                    yield return Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod);
+                    yield return Instruction.Create(OpCodes.Nop);
+                    yield return Instruction.Create(OpCodes.Nop);
+                }
+            }
+            //else
+            //{
+            //    foreach (var onExecuteMethod in commandData.OnExecuteMethods)
+            //    {
+            //        if (canExecuteMethod == null)
+            //        {
+
+            //        }
+            //    }
+            //}            
+
+            // BlockEnd is the end of the if (Command == null) {} block (i.e. think the closing brace)
+            yield return blockEnd;          
         }
     }
 }

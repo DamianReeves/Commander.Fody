@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using Commander.Fody;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -38,6 +40,29 @@ namespace Tests
 
             var iface = delegateCommandType.GetInterface("ICommand");
             Assert.That(iface, Is.Not.Null);
+        }
+
+        [Test]
+        public void SurveyViewModel_Should_Have_CommandInitialization_Injected()
+        {
+            var instance = Assembly.GetInstance("WpfMvvmSample.SurveyViewModel");
+            var objectInstance = (object)instance;
+            var type = DefinitionFinder.FindType(objectInstance.GetType());
+            var method = type.FindMethod("<Commander_Fody>InitializeCommands");
+            method.Should().NotBeNull();
+        }
+
+        [Test]
+        public void SurveyViewModel_Should_Have_CommandInitialization_Injected_With_SubmitCommand_Set()
+        {
+            var instance = Assembly.GetInstance("WpfMvvmSample.SurveyViewModel");
+            var objectInstance = (object)instance;
+            var type = DefinitionFinder.FindType(objectInstance.GetType());
+            var method = type.FindMethod("<Commander_Fody>InitializeCommands");
+            method.Body.Instructions
+                .Select(x => x.ToString())
+                .Should()
+                .Contain(inst => inst.Contains("call instance void CommandClass::set_SubmitCommand"));
         }
 
         [Test]

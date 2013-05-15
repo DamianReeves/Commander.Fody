@@ -32,7 +32,7 @@ public static class DefinitionFinder
         return FindType(declaringType);
     }
 
-    static TypeDefinition FindType(Type typeToFind)
+    public static TypeDefinition FindType(Type typeToFind)
     {
         var moduleDefinition = ModuleDefinition.ReadModule(typeToFind.Assembly.Location);
         foreach (var type in moduleDefinition.Types)

@@ -104,6 +104,9 @@ namespace Commander.Fody
                 Instruction.Create(OpCodes.Nop),
                 Instruction.Create(OpCodes.Nop)
                 );
+
+            Command.CommandInitializationInjected = true;
+            Command.UsesNestedCommand = true;
         }
 
         internal MethodDefinition CreateConstructor(TypeDefinition type)

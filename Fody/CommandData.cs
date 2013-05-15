@@ -56,6 +56,8 @@ namespace Commander.Fody
         }
 
         public bool PropertyInjectionApplied { get; set; }
+        public bool CommandInitializationInjected { get; set; }
+        public bool UsesNestedCommand { get; set; }
         public PropertyDefinition CommandProperty { get; set; }
         public TypeReference DelegateCommandTypeReference { get; set; }
         public MethodReference DelegateCommandConstructorReference { get; set; }        
