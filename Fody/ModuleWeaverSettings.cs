@@ -13,6 +13,7 @@ namespace Commander.Fody
         public const string DefaultOnCommandCanExecuteAttributeName = "OnCommandCanExecuteAttribute";
 
         private readonly XElement _config;
+        private bool _fallbackToNestedCommands = true;
 
         public ModuleWeaverSettings()
         {
@@ -42,7 +43,12 @@ namespace Commander.Fody
         public string OnCommandAttributeName { get; set; }
         public string OnCommandCanExecuteAttributeName { get; set; }
         public bool MatchAttributesByFullName { get; set; }
-        public bool FallbackToNestedCommands { get; set; }
+        public bool FallbackToNestedCommands
+        {
+            get { return _fallbackToNestedCommands; }
+            set { _fallbackToNestedCommands = value; }
+        }
+
         public IList<string> CommandImplementationTypes { get; set; }
 
         public virtual IEnumerable<TypeDefinition> GetAllTypes(ModuleWeaver moduleWeaver)

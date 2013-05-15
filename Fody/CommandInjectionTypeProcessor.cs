@@ -64,14 +64,11 @@ namespace Commander.Fody
             }            
 
             var initializeMethod = CreateCommandInitializerMethod();
-            if (Assets.CommandImplementationConstructors.Count == 0)
+            if (Assets.CommandImplementationConstructors.Count == 0 && ModuleWeaver.Settings.FallbackToNestedCommands)
             {
-                if (ModuleWeaver.Settings.FallbackToNestedCommands)
-                {
-                    Assets.Log.Info("Opting for nested command injection for type: {0} since there were no eligible command implementations.", Type.FullName);
-                    //Assets.Log.Info("Command initialization for type: {0} skipped since there were no eligible command implementations.", Type.FullName);
-                    InjectCommandInitializationWithNestedCommand(initializeMethod);
-                }                
+                Assets.Log.Info("Opting for nested command injection for type: {0} since there were no eligible command implementations.", Type.FullName);
+                //Assets.Log.Info("Command initialization for type: {0} skipped since there were no eligible command implementations.", Type.FullName);
+                InjectCommandInitializationWithNestedCommand(initializeMethod);             
             }
             else
             {
@@ -112,11 +109,13 @@ namespace Commander.Fody
 
         public bool TryAddCommandPropertyInitialization(MethodDefinition initializeMethod, CommandData commandData)
         {
-            var commandConstructor = Assets.CommandImplementationConstructors.FirstOrDefault();
-            if (commandConstructor == null)
+            if (!Assets.CommandImplementationConstructors.Any())
             {
-                Assets.Log.Info("Skipped command initialization for command {0}, because there is no eligible command implementation to bind to.", commandData);
-                return false;
+                if (!Assets.DelegateCommandImplementationWasInjected)
+                {
+                    Assets.Log.Info("Skipped command initialization for command {0}, because there is no eligible command implementation to bind to.", commandData);
+                    return false;
+                }                
             }
 
             if (!initializeMethod.Body.Variables.Any(vDef => vDef.VariableType.IsBoolean() && vDef.Name == "isNull"))
@@ -228,53 +227,147 @@ namespace Commander.Fody
             yield return Instruction.Create(OpCodes.Ldloc_0);
             yield return Instruction.Create(OpCodes.Brtrue_S, blockEnd);
 
-            var canExecuteMethod = commandData.CanExecuteMethods.SingleOrDefault();
-            if (commandData.OnExecuteMethods.Count > 0)
+            foreach (var instruction in GetSetCommandInstructions(commandData))
             {
-                var onExecuteMethod = commandData.OnExecuteMethods[0];
+                yield return instruction;
+            }
+
+            // BlockEnd is the end of the if (Command == null) {} block (i.e. think the closing brace)
+            yield return blockEnd;          
+        }
+
+        internal IEnumerable<Instruction> GetSetCommandInstructions(CommandData command)
+        {
+            var commandConstructors = Assets.CommandImplementationConstructors;
+            if (Assets.DelegateCommandImplementationWasInjected)
+            {
+                var delegateCommandType = Assets.ModuleDefinition.GetType(DelegateCommandClassInjectionProcessor.GeneratedCommandClassName);
+                commandConstructors = commandConstructors.Concat(delegateCommandType.GetConstructors()).ToList();
+            }
+            if (command.OnExecuteMethods.Count > 0)
+            {
                 MethodReference commandConstructor;
+                var onExecuteMethod = command.OnExecuteMethods[0];
+                var canExecuteMethod = command.CanExecuteMethods.FirstOrDefault();
                 if (canExecuteMethod == null)
                 {
-                    commandConstructor = Assets.CommandImplementationConstructors.FirstOrDefault();
+                    commandConstructor = commandConstructors.FirstOrDefault(mf=>mf.Parameters.Count == 1);
+                    commandConstructor = GetConstructorResolved(commandConstructor, onExecuteMethod);
                     yield return Instruction.Create(OpCodes.Ldarg_0);
                     yield return Instruction.Create(OpCodes.Ldarg_0);
                     yield return Instruction.Create(OpCodes.Ldftn, onExecuteMethod);
-                    yield return Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference);
+                    yield return Instruction.Create(OpCodes.Newobj, GetActionConstructorForExecuteMethod(onExecuteMethod, commandConstructor));
                     yield return Instruction.Create(OpCodes.Newobj, commandConstructor);
-                    yield return Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod);
+                    yield return Instruction.Create(OpCodes.Call, command.CommandProperty.SetMethod);
                     yield return Instruction.Create(OpCodes.Nop);
                     yield return Instruction.Create(OpCodes.Nop);
                 }
                 else
                 {
-                    commandConstructor = Assets.CommandImplementationConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
+                    commandConstructor = commandConstructors.OrderByDescending(mf => mf.Parameters.Count).First();
+                    commandConstructor = GetConstructorResolved(commandConstructor, onExecuteMethod);
                     yield return Instruction.Create(OpCodes.Nop);
                     yield return Instruction.Create(OpCodes.Ldarg_0);
                     yield return Instruction.Create(OpCodes.Ldarg_0);
-                    yield return Instruction.Create(OpCodes.Ldftn, commandData.OnExecuteMethods.Single());
-                    yield return Instruction.Create(OpCodes.Newobj, Assets.ActionConstructorReference);
+                    yield return Instruction.Create(OpCodes.Ldftn, command.OnExecuteMethods.Single());
+                    yield return Instruction.Create(OpCodes.Newobj, GetActionConstructorForExecuteMethod(onExecuteMethod, commandConstructor));
                     yield return Instruction.Create(OpCodes.Ldarg_0);
-                    yield return Instruction.Create(OpCodes.Ldftn, commandData.CanExecuteMethods.Single());
-                    yield return Instruction.Create(OpCodes.Newobj, Assets.FuncOfBoolConstructorReference);
+                    yield return Instruction.Create(OpCodes.Ldftn, command.CanExecuteMethods.Single());
+                    yield return Instruction.Create(OpCodes.Newobj, GetPredicateConstructorForCanExecuteMethod(canExecuteMethod, commandConstructor));
                     yield return Instruction.Create(OpCodes.Newobj, commandConstructor);
-                    yield return Instruction.Create(OpCodes.Call, commandData.CommandProperty.SetMethod);
+                    yield return Instruction.Create(OpCodes.Call, command.CommandProperty.SetMethod);
                     yield return Instruction.Create(OpCodes.Nop);
                     yield return Instruction.Create(OpCodes.Nop);
                 }
             }
-            //else
-            //{
-            //    foreach (var onExecuteMethod in commandData.OnExecuteMethods)
-            //    {
-            //        if (canExecuteMethod == null)
-            //        {
+        }
 
-            //        }
-            //    }
-            //}            
+        private MethodReference GetConstructorResolved(MethodReference commandConstructor, MethodDefinition method)
+        {
+            var parameterType = method.HasParameters
+                ? method.Parameters[0].ParameterType
+                : Assets.TypeReferences.Object;
 
-            // BlockEnd is the end of the if (Command == null) {} block (i.e. think the closing brace)
-            yield return blockEnd;          
+            var commandType = commandConstructor.DeclaringType;
+            bool isGeneric = commandType.HasGenericParameters;
+            if (commandType.HasGenericParameters)
+            {
+                var commandTypeResolved = commandConstructor.DeclaringType.MakeGenericInstanceType(parameterType);
+                commandType = commandTypeResolved;
+                var resolvedConstructor =
+                    commandType.GetElementType()
+                        .Resolve()
+                        .GetConstructors()
+                        .First(c => c.Parameters.Count == commandConstructor.Parameters.Count);
+                commandConstructor = resolvedConstructor;
+            }
+
+            if (isGeneric)
+            {
+                if (method.HasParameters)
+                {
+                    commandConstructor =
+                        commandConstructor.MakeHostInstanceGeneric(method.Parameters[0].ParameterType);
+                }
+                else
+                {
+                    commandConstructor = commandConstructor.MakeHostInstanceGeneric(Assets.TypeReferences.Object);
+                }
+            }
+            return commandConstructor;
+        }
+
+        private MethodReference GetActionConstructorForExecuteMethod(MethodReference method, MethodReference targetConstructor)
+        {
+            if (method.Parameters.Count > 1)
+            {
+                throw new WeavingException(
+                    string.Format("Cannot generate command initialization for method {0}, because the method has too many parameters."
+                    ,method));
+            }
+
+            if (method.HasParameters)
+            {
+                // Action<TCommandParameter> where TCommandParameter = method.Parameters[0].ParameterType
+                return Assets.ActionOfTConstructorReference.MakeHostInstanceGeneric(method.Parameters[0].ParameterType);
+            }
+
+            // Action()
+            return Assets.ActionConstructorReference;
+        }
+
+        private MethodReference GetPredicateConstructorForCanExecuteMethod(MethodReference method, MethodReference targetConstructor)
+        {
+            if (method.Parameters.Count > 1)
+            {
+                throw new WeavingException(
+                    string.Format("Cannot generate command initialization for 'CanExecute' method {0}, because the method has too many parameters."
+                    , method));
+            }
+
+            if (targetConstructor.Parameters.Count != 2)
+            {
+                throw new WeavingException(
+                    string.Format("Cannot generate command initialization for 'CanExecute' method {0}, because the method has the wrong signature."
+                    , method));
+            }
+
+            var targetParameter = targetConstructor.Parameters[1];
+            if (method.HasParameters)
+            {
+                var methodParameter = method.Parameters[0];             
+                return Assets.PredicateOfTConstructorReference.MakeHostInstanceGeneric(methodParameter.ParameterType);
+            }
+
+            if (targetParameter.ParameterType.Name != "Func`1")
+            {
+                throw new WeavingException(
+                    string.Format("Cannot generate command initialization for 'CanExecute' method {0}, because the method has the wrong signature."
+                    , method));
+            }
+           
+            // Action()
+            return Assets.FuncOfBoolConstructorReference;
         }
     }
 }

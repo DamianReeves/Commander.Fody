@@ -62,7 +62,7 @@ namespace Tests
             method.Body.Instructions
                 .Select(x => x.ToString())
                 .Should()
-                .Contain(inst => inst.Contains("call instance void CommandClass::set_SubmitCommand"));
+                .Contain(inst => inst.Contains("call System.Void WpfMvvmSample.SurveyViewModel::set_SubmitCommand"));
         }
 
         [Test]
@@ -73,7 +73,8 @@ namespace Tests
             object submitCommandObject = submitCommand;
             submitCommandObject.Should().NotBeNull("SubmitCommand should be initialized.");
             var type = (submitCommandObject).GetType();
-            type.Name.Should().Be("<Commander_Fody>__DelegateCommand");
+            //type.Name.Should().Be("<Commander_Fody>__DelegateCommand");
+            type.Name.Should().Be("<>__NestedCommandImplementationForSubmitCommand");
         }
     }
 }

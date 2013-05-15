@@ -58,6 +58,7 @@ namespace Commander.Fody
             Assets.AddCanExecuteChangedEvent(commandClass);
 
             ModuleDefinition.Types.Add(commandClass);
+            Assets.DelegateCommandImplementationWasInjected = true;
             return commandClass;
         }
 

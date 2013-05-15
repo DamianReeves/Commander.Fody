@@ -23,7 +23,9 @@ namespace Commander.Fody
         private readonly MethodReference _commandManagerAddRequerySuggestedMethodReference;
         private readonly MethodReference _commandManagerRemoveRequerySuggestedMethodReference;
         private readonly MethodReference _actionOfTInvokeReference;
+        private readonly MethodReference _actionOfTConstructorReference;
         private readonly MethodReference _predicateOfTInvokeReference;
+        private readonly MethodReference _predicateOfTConstructorReference;
         private readonly MethodReference _argumentNullExceptionConstructorReference;
         private readonly IList<MethodReference> _commandImplementationConstructors;        
 
@@ -47,10 +49,14 @@ namespace Commander.Fody
             _objectConstructorReference = ModuleDefinition.Import(constructorDefinition);
             var actionConstructor = TypeDefinitions.Action.Methods.First(x => x.IsConstructor);
             ActionConstructorReference = ModuleDefinition.Import(actionConstructor);
+            var actionOfTConstructor = TypeDefinitions.ActionOfT.GetConstructors().First();
+            _actionOfTConstructorReference = ModuleDefinition.Import(actionOfTConstructor);
             var actionOfTInvokerDefinition = TypeDefinitions.ActionOfT.Methods.First(x => x.Name == "Invoke");
-            _actionOfTInvokeReference = ModuleDefinition.Import(actionOfTInvokerDefinition);
+            _actionOfTInvokeReference = ModuleDefinition.Import(actionOfTInvokerDefinition);            
             var funcConstructor = TypeDefinitions.FuncOfT.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
             _funcOfBoolConstructorReference = ModuleDefinition.Import(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);
+            var predicateOfTConstructor = TypeDefinitions.PredicateOfT.GetConstructors().First();
+            _predicateOfTConstructorReference = ModuleDefinition.Import(predicateOfTConstructor);
             var predicateOfTInvokerDefinition = TypeDefinitions.PredicateOfT.Methods.First(x => x.Name == "Invoke");
             _predicateOfTInvokeReference = ModuleDefinition.Import(predicateOfTInvokerDefinition);
 
@@ -120,6 +126,11 @@ namespace Commander.Fody
             get { return _commandManagerRemoveRequerySuggestedMethodReference; }
         }
 
+        public MethodReference ActionOfTConstructorReference
+        {
+            get { return _actionOfTConstructorReference; }
+        }
+
         public MethodReference ActionOfTInvokeReference
         {
             get { return _actionOfTInvokeReference; }
@@ -138,6 +149,13 @@ namespace Commander.Fody
         public ConcurrentDictionary<string, CommandData> Commands
         {
             get { return _commands; }
+        }
+
+        public bool DelegateCommandImplementationWasInjected { get; set; }
+
+        public MethodReference PredicateOfTConstructorReference
+        {
+            get { return _predicateOfTConstructorReference; }
         }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()
@@ -176,6 +194,6 @@ namespace Commander.Fody
                 Log.Info("Found eligible ICommand implementation constructor: {0}", ctor);
             }
             return ctors;
-        }        
+        }     
     }
 }
