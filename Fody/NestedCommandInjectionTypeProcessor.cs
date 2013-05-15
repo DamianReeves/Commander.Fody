@@ -158,6 +158,18 @@ namespace Commander.Fody
                 if (onExecuteMethod.Parameters.Count == 1)
                 {
                     il.Append(Instruction.Create(OpCodes.Ldarg_1));
+                    var parameter = onExecuteMethod.Parameters[0];
+                    if (!parameter.ParameterType.FullNameMatches(Assets.TypeReferences.Object))
+                    {
+                        if (parameter.ParameterType.IsGenericInstance)
+                        {
+
+                        }
+                        else
+                        {
+                            il.Append(Instruction.Create(OpCodes.Unbox_Any, parameter.ParameterType));
+                        }
+                    }
                 }                
                 if (onExecuteMethod.IsVirtual)
                 {

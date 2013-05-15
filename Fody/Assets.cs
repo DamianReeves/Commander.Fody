@@ -161,6 +161,13 @@ namespace Commander.Fody
                 && ctor.Parameters[1].ParameterType.Name.StartsWith("Func") 
                 && ctor.Parameters[1].ParameterType.IsGenericInstance
                 )
+                || (ctor.HasParameters
+                && ctor.Parameters.Count == 2
+                && ctor.Parameters[0].ParameterType.FullNameMatches(TypeReferences.Action)
+                && ctor.Parameters[0].ParameterType.IsGenericInstance
+                && ctor.Parameters[1].ParameterType.Name == "Predicate`1" 
+                && ctor.Parameters[1].ParameterType.IsGenericInstance
+                )
                 select ModuleDefinition.Import(ctor);
 
             var ctors = eligibleCtors.ToList();

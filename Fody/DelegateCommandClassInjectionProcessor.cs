@@ -7,14 +7,14 @@ using Mono.Cecil.Rocks;
 
 namespace Commander.Fody
 {
-    public class ClassInjectionProcessor : ModuleProcessorBase
+    public class DelegateCommandClassInjectionProcessor : ModuleProcessorBase
     {
         public const string GeneratedCommandClassNamespace = "";
         public const string GeneratedCommandClassName = "<Commander_Fody>__DelegateCommand";
         public const TypeAttributes DefaultTypeAttributesForCommand = TypeAttributes.SpecialName | TypeAttributes.BeforeFieldInit;
         public const MethodAttributes ConstructorDefaultMethodAttributes =
             MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
-        public ClassInjectionProcessor([NotNull] ModuleWeaver moduleWeaver) : base(moduleWeaver)
+        public DelegateCommandClassInjectionProcessor([NotNull] ModuleWeaver moduleWeaver) : base(moduleWeaver)
         {
         }
 
@@ -23,7 +23,11 @@ namespace Commander.Fody
             if (ShouldGenerateDelegateCommand())
             {
                 Assets.Log.Info("DelegateCommand class generation is enabled.");
-                GenerateClass();
+                var commandClass = GenerateClass();
+                //foreach (var constructor in commandClass.GetConstructors())
+                //{
+                //    Assets.CommandImplementationConstructors.Add(constructor);
+                //}                                
             }
         }
 
@@ -33,7 +37,7 @@ namespace Commander.Fody
                 || Assets.CommandImplementationConstructors.Count == 0;
         }
 
-        public void GenerateClass()
+        public TypeDefinition GenerateClass()
         {
             var commandClass = new TypeDefinition(
                 GeneratedCommandClassNamespace
@@ -54,6 +58,7 @@ namespace Commander.Fody
             Assets.AddCanExecuteChangedEvent(commandClass);
 
             ModuleDefinition.Types.Add(commandClass);
+            return commandClass;
         }
 
         internal void AddConstructors(TypeDefinition commandClass)
@@ -64,7 +69,6 @@ namespace Commander.Fody
 
         internal MethodDefinition AddActionOnlyConstructor(TypeDefinition commandClass, MethodDefinition invokedConstructor)
         {
-            var executeField = commandClass.Fields.Single(x => x.Name == "_execute");
             var constructor = new MethodDefinition(".ctor", ConstructorDefaultMethodAttributes, Assets.TypeReferences.Void);
 
             // Prepare type for parameter

@@ -48,7 +48,7 @@ namespace Tests
             object submitCommandObject = submitCommand;
             submitCommandObject.Should().NotBeNull("SubmitCommand should be initialized.");
             var type = (submitCommandObject).GetType();
-            type.Name.Should().Be("DelegateCommand");
+            type.Name.Should().Be("<Commander_Fody>__DelegateCommand");
         }
     }
 }

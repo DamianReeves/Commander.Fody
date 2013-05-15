@@ -66,9 +66,12 @@ namespace Commander.Fody
             var initializeMethod = AddCommandInitializerMethod();
             if (Assets.CommandImplementationConstructors.Count == 0)
             {
-                Assets.Log.Info("Opting for nested command injection for type: {0} since there were no eligible command implementations.", Type.FullName);
-                //Assets.Log.Info("Command initialization for type: {0} skipped since there were no eligible command implementations.", Type.FullName);
-                InjectCommandInitializationWithNestedCommand(initializeMethod);
+                if (ModuleWeaver.Settings.FallbackToNestedCommands)
+                {
+                    Assets.Log.Info("Opting for nested command injection for type: {0} since there were no eligible command implementations.", Type.FullName);
+                    //Assets.Log.Info("Command initialization for type: {0} skipped since there were no eligible command implementations.", Type.FullName);
+                    InjectCommandInitializationWithNestedCommand(initializeMethod);
+                }                
             }
             else
             {

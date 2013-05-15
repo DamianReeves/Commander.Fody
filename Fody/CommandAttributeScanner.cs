@@ -23,12 +23,16 @@ namespace Commander.Fody
 
         public IEnumerable<MethodDefinition> FindOnCommandMethods(TypeDefinition type)
         {
-            return type.Methods.Where(method => method.CustomAttributes.ContainsAttribute(Settings.OnCommandAttributeName, Settings.MatchAttributesByFullName));
+            return type.Methods.Where(method => 
+                method.CustomAttributes.ContainsAttribute(
+                    Settings.OnCommandAttributeName, Settings.MatchAttributesByFullName));
         }
 
         public IEnumerable<MethodDefinition> FindCommandCanExecuteMethods(TypeDefinition type)
         {
-            return type.Methods.Where(method => method.CustomAttributes.ContainsAttribute(Settings.OnCommandCanExecuteAttributeName, Settings.MatchAttributesByFullName));
+            return type.Methods.Where(method => 
+                method.CustomAttributes.ContainsAttribute(
+                    Settings.OnCommandCanExecuteAttributeName, Settings.MatchAttributesByFullName));
         }
 
         public bool IsValidOnExecuteMethod(MethodDefinition method)
@@ -36,8 +40,7 @@ namespace Commander.Fody
             return method.ReturnType == Assets.TypeReferences.Void
                 && (!method.HasParameters
                     || (method.Parameters.Count == 1
-                        && !method.Parameters[0].IsOut
-                        && method.Parameters[0].ParameterType.Matches(Assets.TypeReferences.Object)));
+                        && !method.Parameters[0].IsOut));
         }
 
         public bool IsValidCanExecuteMethod(MethodDefinition method)

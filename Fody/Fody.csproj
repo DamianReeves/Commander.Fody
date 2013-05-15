@@ -61,7 +61,7 @@
     </Compile>
     <Compile Include="Assets.cs" />
     <Compile Include="CecilExtensions.cs" />
-    <Compile Include="ClassInjectionProcessor.cs" />
+    <Compile Include="DelegateCommandClassInjectionProcessor.cs" />
     <Compile Include="CommandAttributeScanner.cs" />
     <Compile Include="MemberInjection.cs" />
     <Compile Include="CommandData.cs" />

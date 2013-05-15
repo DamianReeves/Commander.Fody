@@ -18,6 +18,11 @@ namespace Commander.Fody
         {
             OnCommandAttributeName = DefaultOnCommandAttributeName;
             OnCommandCanExecuteAttributeName = DefaultOnCommandCanExecuteAttributeName;
+            CommandImplementationTypes = new List<string>
+            {
+                "DelegateCommand",
+                "RelayCommand",
+            };
         }
 
         public ModuleWeaverSettings(XElement config):this()
@@ -37,6 +42,8 @@ namespace Commander.Fody
         public string OnCommandAttributeName { get; set; }
         public string OnCommandCanExecuteAttributeName { get; set; }
         public bool MatchAttributesByFullName { get; set; }
+        public bool FallbackToNestedCommands { get; set; }
+        public IList<string> CommandImplementationTypes { get; set; }
 
         public virtual IEnumerable<TypeDefinition> GetAllTypes(ModuleWeaver moduleWeaver)
         {
@@ -72,6 +79,12 @@ namespace Commander.Fody
             {
                 MatchAttributesByFullName = matchAttributesByFullName.Value;
             }
+
+            var fallbackToNestedCommands = (bool?)Config.Attribute("FallbackToNestedCommands");
+            if (fallbackToNestedCommands != null)
+            {
+                FallbackToNestedCommands = fallbackToNestedCommands.Value;
+            }            
         }
     }
 }

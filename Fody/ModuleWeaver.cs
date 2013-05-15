@@ -53,7 +53,7 @@ namespace Commander.Fody
             var processors = new ModuleProcessorBase[]
             {
                 new CommandAttributeScanner(this),
-                new ClassInjectionProcessor(this),
+                new DelegateCommandClassInjectionProcessor(this),
                 new ModuleTypesProcessor(this)
             };
             return processors;
