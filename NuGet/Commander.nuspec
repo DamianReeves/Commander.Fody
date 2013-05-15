@@ -7,7 +7,7 @@
     <authors>Damian Reeves</authors>
     <owners>Damian Reeves</owners>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
-    <projectUrl>https://github.com/DamianReeves/Commander.Fody</projectUrl>
+    <projectUrl>http://damianreeves.github.io/Commander.Fody/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <iconUrl>https://raw.github.com/DamianReeves/Commander.Fody/master/Icons/package_icon.png</iconUrl>
     <description>Fody add-in for command invoking and implementation.</description>
