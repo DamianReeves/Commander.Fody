@@ -13,7 +13,7 @@ public class WeaverHelper
     string assemblyPath;
     public Assembly Assembly { get; set; }
 
-    public WeaverHelper(string projectPath, Action<string> logger = null )
+    public WeaverHelper(string projectPath, Action<ModuleWeaver> configure = null )
     {
         this.projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\", projectPath));
 
@@ -30,15 +30,15 @@ public class WeaverHelper
         var weavingTask = new ModuleWeaver
         {
             ModuleDefinition = moduleDefinition,
-            AssemblyResolver = assemblyResolver
+            AssemblyResolver = assemblyResolver,
+            LogInfo = Console.WriteLine,
+            LogError = Console.Error.WriteLine
         };
 
-        if (logger != null)
+        if (configure != null)
         {
-            weavingTask.LogInfo = logger;
-            weavingTask.LogError = Console.WriteLine;
-        }
-
+            configure(weavingTask);
+        }        
 
         weavingTask.Execute();
             var writerParameters = new WriterParameters
@@ -52,7 +52,7 @@ public class WeaverHelper
 
     void GetAssemblyPath()
     {
-        assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), GetOutputPathValue(), GetAssemblyName() + GetOuputExtension());
+        assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), GetOutputPathValue(), GetAssemblyName() + GetOutputExtension());
     }
 
     string GetAssemblyName()
@@ -82,7 +82,7 @@ public class WeaverHelper
         return outputPathValue;
     }
 
-    string GetOuputExtension()
+    string GetOutputExtension()
     {
         var xDocument = XDocument.Load(projectPath);
         xDocument.StripNamespace();

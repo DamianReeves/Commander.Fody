@@ -5,6 +5,10 @@ using System.Reflection;
 using System.Text;
 using Commander.Fody;
 using FluentAssertions;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Tests
@@ -55,14 +59,17 @@ namespace Tests
         [Test]
         public void SurveyViewModel_Should_Have_CommandInitialization_Injected_With_SubmitCommand_Set()
         {
+            var ilVisitor = Substitute.For<IILVisitor>();
+            ilVisitor.OnInlineMethod(Arg.Is(OpCodes.Call), Arg.Any<MethodReference>());
             var instance = Assembly.GetInstance("WpfMvvmSample.SurveyViewModel");
             var objectInstance = (object)instance;
             var type = DefinitionFinder.FindType(objectInstance.GetType());
             var method = type.FindMethod("<Commander_Fody>InitializeCommands");
-            method.Body.Instructions
-                .Select(x => x.ToString())
-                .Should()
-                .Contain(inst => inst.Contains("call System.Void WpfMvvmSample.SurveyViewModel::set_SubmitCommand"));
+            ILParser.Parse(method, ilVisitor);
+            ilVisitor.Received().OnInlineMethod(
+                Arg.Is(OpCodes.Call)
+                , Arg.Is<MethodReference>(x => x.Name == "set_SubmitCommand" && x.DeclaringType.Name == "SurveyViewModel")
+            );
         }
 
         [Test]
