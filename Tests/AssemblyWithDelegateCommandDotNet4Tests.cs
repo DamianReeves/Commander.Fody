@@ -8,7 +8,7 @@ public class AssemblyWithDelegateCommandDotNet4Tests : BaseTaskTests
 {
 
     public AssemblyWithDelegateCommandDotNet4Tests()
-        : base(@"TestAssemblies\AssemblyWithDelegateCommand\AssemblyWithDelegateCommandDotNet4.csproj", Console.WriteLine)
+        : base(@"TestAssemblies\AssemblyWithDelegateCommand\AssemblyWithDelegateCommandDotNet4.csproj")
     {
     }    
 

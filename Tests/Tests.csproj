@@ -66,6 +66,7 @@
     <Compile Include="AssemblyWithDelegateCommandDotNet4Tests.cs" />
     <Compile Include="DefinitionFinder.cs" />
     <Compile Include="Net4WeavingTaskTests.cs" />
+    <Compile Include="Phone8WeavingTaskTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestAssemblyResolver.cs" />
     <Compile Include="Verifier.cs" />
