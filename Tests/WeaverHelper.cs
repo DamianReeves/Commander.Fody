@@ -9,15 +9,13 @@ using Mono.Cecil;
 
 public class WeaverHelper
 {
-    string projectPath;
-    string assemblyPath;
     public Assembly Assembly { get; set; }
 
     public WeaverHelper(string projectPath, Action<ModuleWeaver> configure = null )
     {
-        this.projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\", projectPath));
+        projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\", projectPath));
 
-        GetAssemblyPath();
+        var assemblyPath = GetAssemblyPath(projectPath);
 
         var newAssembly = assemblyPath.Replace(".dll", "2.dll").Replace(".exe","2.exe");
         var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
@@ -25,7 +23,7 @@ public class WeaverHelper
         File.Copy(assemblyPath, newAssembly, true);
         File.Copy(pdbFileName, newPdbFileName, true);
 
-        var assemblyResolver = new TestAssemblyResolver(assemblyPath, this.projectPath);
+        var assemblyResolver = new TestAssemblyResolver(assemblyPath, projectPath);
         var moduleDefinition = ModuleDefinition.ReadModule(newAssembly, new ReaderParameters {AssemblyResolver = assemblyResolver});
         var weavingTask = new ModuleWeaver
         {
@@ -41,21 +39,42 @@ public class WeaverHelper
         }        
 
         weavingTask.Execute();
-            var writerParameters = new WriterParameters
-                                       {
-                                           WriteSymbols = true
-                                       };
-            moduleDefinition.Write(newAssembly,writerParameters);
+        var writerParameters = new WriterParameters
+        {
+            WriteSymbols = true
+        };
+        moduleDefinition.Write(newAssembly,writerParameters);
 
         Assembly = Assembly.LoadFile(newAssembly);
     }
 
-    void GetAssemblyPath()
+    public static ModuleDefinition GetModuleDefinition(string projectPath)
     {
-        assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), GetOutputPathValue(), GetAssemblyName() + GetOutputExtension());
+        projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\", projectPath));
+
+        var assemblyPath = GetAssemblyPath(projectPath);
+
+        var newAssembly = assemblyPath.Replace(".dll", "2.dll").Replace(".exe", "2.exe");
+        var pdbFileName = Path.ChangeExtension(assemblyPath, "pdb");
+        var newPdbFileName = Path.ChangeExtension(newAssembly, "pdb");
+        File.Copy(assemblyPath, newAssembly, true);
+        File.Copy(pdbFileName, newPdbFileName, true);
+
+        var assemblyResolver = new TestAssemblyResolver(assemblyPath, projectPath);
+        var moduleDefinition = ModuleDefinition.ReadModule(newAssembly, new ReaderParameters { AssemblyResolver = assemblyResolver });
+        return moduleDefinition;
     }
 
-    string GetAssemblyName()
+    private static string GetAssemblyPath(string projectPath)
+    {
+        return Path.Combine(
+            Path.GetDirectoryName(projectPath)??string.Empty
+            , GetOutputPathValue(projectPath)
+            , GetAssemblyName(projectPath) + GetOutputExtension(projectPath)
+        );
+    }
+
+    private static string GetAssemblyName(string projectPath)
     {
         var xDocument = XDocument.Load(projectPath);
         xDocument.StripNamespace();
@@ -65,7 +84,7 @@ public class WeaverHelper
             .First();
     }
 
-    string GetOutputPathValue()
+    private static string GetOutputPathValue(string projectPath)
     {
         var xDocument = XDocument.Load(projectPath);
         xDocument.StripNamespace();
@@ -82,7 +101,7 @@ public class WeaverHelper
         return outputPathValue;
     }
 
-    string GetOutputExtension()
+    private static string GetOutputExtension(string projectPath)
     {
         var xDocument = XDocument.Load(projectPath);
         xDocument.StripNamespace();

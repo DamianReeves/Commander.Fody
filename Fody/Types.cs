@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Mono.Cecil;
@@ -77,9 +78,9 @@ namespace Commander.Fody
             _object = moduleDefinition.TypeSystem.Object;
             _boolean = moduleDefinition.TypeSystem.Boolean;
 
+            var targetFramework = moduleDefinition.Assembly.GetTargetFramework();
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
-            var msCoreLibDefinition = assemblyResolver.Resolve("mscorlib");
-            var msCoreTypes = msCoreLibDefinition.MainModule.Types;
+            var msCoreTypes = GetMscorlibTypes(targetFramework);
 
             var systemDefinition = assemblyResolver.Resolve("System");
             var systemTypes = systemDefinition.MainModule.Types;
@@ -287,6 +288,19 @@ namespace Commander.Fody
         {
             get { return _moduleDefinition; }
         }        
+
+        private IList<TypeDefinition> GetMscorlibTypes(string targetFramework)
+        {
+            targetFramework = targetFramework ?? string.Empty;
+            if (targetFramework.StartsWith("WindowsPhone"))
+            {
+                return new TypeDefinition[]{};
+            }
+            var assemblyResolver = ModuleDefinition.AssemblyResolver;
+            var msCoreLibDefinition = assemblyResolver.Resolve("mscorlib");
+            var msCoreTypes = msCoreLibDefinition.MainModule.Types;
+            return msCoreTypes;
+        }
 
         private AssemblyDefinition GetPresentationCoreDefinition()
         {

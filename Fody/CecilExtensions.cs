@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -219,4 +220,25 @@ namespace Commander.Fody
             return true;
         }
     }    
+
+    public static class AssemblyDefinitionExtensions
+    {
+        public static string GetTargetFramework([NotNull] this AssemblyDefinition self)
+        {
+            if (self == null)
+            {
+                throw new ArgumentNullException("self");
+            }
+            var attribute = self.CustomAttributes.FirstOrDefault(
+                ca => ca.Constructor.DeclaringType.FullName == "System.Runtime.Versioning.TargetFrameworkAttribute");
+            if (attribute == null)
+            {
+                return null;
+            }
+
+            var frameworkNameArg = attribute.ConstructorArguments.First();
+            var frameworkName = (string) frameworkNameArg.Value;
+            return frameworkName;
+        }
+    }
 }
