@@ -41,6 +41,7 @@ namespace Commander.Fody
 
     public class Types : ITypeReferences, ITypeDefinitions
     {
+        private readonly ModuleWeaver _moduleWeaver;
         private readonly ModuleDefinition _moduleDefinition;
 
         private TypeReference _action;
@@ -66,11 +67,13 @@ namespace Commander.Fody
         private TypeDefinition _predicateOfTDef;
 
         public Types([NotNull] ModuleWeaver moduleWeaver)
-        {
+        {            
             if (moduleWeaver == null)
             {
                 throw new ArgumentNullException("moduleWeaver");
             }
+
+            _moduleWeaver = moduleWeaver;
             var moduleDefinition = _moduleDefinition = moduleWeaver.ModuleDefinition;
 
             _string = moduleDefinition.TypeSystem.String;
@@ -85,7 +88,8 @@ namespace Commander.Fody
             var systemDefinition = assemblyResolver.Resolve("System");
             var systemTypes = systemDefinition.MainModule.Types;
 
-            var objectDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Object");
+            var objectDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Object")
+                ?? systemTypes.FirstOrDefault(x => x.Name == "Object");
             if (objectDefinition == null)
             {
                 ExecuteWinRT();
@@ -154,8 +158,8 @@ namespace Commander.Fody
             _argumentNullExceptionDef = argumentNullException;
             _argumentNullException = ModuleDefinition.Import(argumentNullException);
 
-            var presentationCoreDefinition = GetPresentationCoreDefinition();
-            var presentationCoreTypes = presentationCoreDefinition.MainModule.Types;
+            var commandPrimaryAssemblyDef = GetPrimaryICommandSearchLocation(targetFramework);
+            var presentationCoreTypes = commandPrimaryAssemblyDef.MainModule.Types;
             var iCommandDefinition = presentationCoreTypes.FirstOrDefault(x => x.Name == "ICommand");
             if (iCommandDefinition == null)
             {
@@ -174,7 +178,10 @@ namespace Commander.Fody
                 commandManagerDefinition = systemTypes.FirstOrDefault(x => x.Name == "CommandManager");
             }
             _commandManagerDef = commandManagerDefinition;
-            _commandManager = ModuleDefinition.Import(commandManagerDefinition);                       
+            if (commandManagerDefinition != null)
+            {
+                _commandManager = ModuleDefinition.Import(commandManagerDefinition);                       
+            }            
         }
 
         TypeReference ITypeReferences.Action
@@ -393,10 +400,14 @@ namespace Commander.Fody
             return msCoreTypes;
         }
 
-        private AssemblyDefinition GetPresentationCoreDefinition()
+        private AssemblyDefinition GetPrimaryICommandSearchLocation(string targetFramework)
         {
             try
             {
+                if (targetFramework.Contains("Portable"))
+                {                    
+                    return ModuleDefinition.AssemblyResolver.Resolve("System.Windows");
+                }
                 return ModuleDefinition.AssemblyResolver.Resolve("PresentationCore");
             }
             catch (Exception exception)
