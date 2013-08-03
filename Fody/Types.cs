@@ -43,27 +43,27 @@ namespace Commander.Fody
     {
         private readonly ModuleDefinition _moduleDefinition;
 
-        private readonly TypeReference _action;
-        private readonly TypeDefinition _actionDef;
-        private readonly TypeReference _actionOfT;
-        private readonly TypeDefinition _actionOfTDef;
-        private readonly TypeReference _argumentNullException;
-        private readonly TypeDefinition _argumentNullExceptionDef;
-        private readonly TypeReference _boolean;
-        private readonly TypeReference _commandManager;
-        private readonly TypeDefinition _commandManagerDef;
-        private readonly TypeReference _eventHandler;
-        private readonly TypeDefinition _eventHandlerDef;
-        private readonly TypeReference _funcOfT;
-        private readonly TypeDefinition _funcOfTDef;
-        private readonly TypeReference _iCommand;
-        private readonly TypeDefinition _iCommandDef;
-        private readonly TypeReference _object;
-        private readonly TypeDefinition _objectDef;
-        private readonly TypeReference _string;
-        private readonly TypeReference _void;
-        private readonly TypeReference _predicateOfT;
-        private readonly TypeDefinition _predicateOfTDef;
+        private TypeReference _action;
+        private TypeDefinition _actionDef;
+        private TypeReference _actionOfT;
+        private TypeDefinition _actionOfTDef;
+        private TypeReference _argumentNullException;
+        private TypeDefinition _argumentNullExceptionDef;
+        private TypeReference _boolean;
+        private TypeReference _commandManager;
+        private TypeDefinition _commandManagerDef;
+        private TypeReference _eventHandler;
+        private TypeDefinition _eventHandlerDef;
+        private TypeReference _funcOfT;
+        private TypeDefinition _funcOfTDef;
+        private TypeReference _iCommand;
+        private TypeDefinition _iCommandDef;
+        private TypeReference _object;
+        private TypeDefinition _objectDef;
+        private TypeReference _string;
+        private TypeReference _void;
+        private TypeReference _predicateOfT;
+        private TypeDefinition _predicateOfTDef;
 
         public Types([NotNull] ModuleWeaver moduleWeaver)
         {
@@ -88,8 +88,8 @@ namespace Commander.Fody
             var objectDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Object");
             if (objectDefinition == null)
             {
-                //ExecuteWinRT();
-                //return;
+                ExecuteWinRT();
+                return;
             }
             _objectDef = objectDefinition;
             _eventHandlerDef = msCoreTypes.First(x => x.Name == "EventHandler");
@@ -287,14 +287,105 @@ namespace Commander.Fody
         public ModuleDefinition ModuleDefinition
         {
             get { return _moduleDefinition; }
-        }        
+        }                
+
+        public void ExecuteWinRT()
+        {
+            var targetFramework = ModuleDefinition.Assembly.GetTargetFramework();
+            var assemblyResolver = ModuleDefinition.AssemblyResolver;
+            var systemRuntime = assemblyResolver.Resolve("System.Runtime");
+            var systemRuntimeTypes = systemRuntime.MainModule.Types;
+
+            var systemDefinition = assemblyResolver.Resolve("System");
+            var systemTypes = systemDefinition.MainModule.Types;
+
+            var objectDefinition = systemRuntimeTypes.First(x => x.Name == "Object");
+            
+            _objectDef = objectDefinition;
+            _eventHandlerDef = systemRuntimeTypes.First(x => x.Name == "EventHandler");
+            _eventHandler = ModuleDefinition.Import(_eventHandlerDef);
+
+            var actionDefinition = systemRuntimeTypes.FirstOrDefault(x => x.Name == "Action");
+            if (actionDefinition == null)
+            {
+                actionDefinition = systemTypes.FirstOrDefault(x => x.Name == "Action");
+            }
+            var systemCoreDefinition = GetSystemCoreDefinition();
+            if (actionDefinition == null)
+            {
+                actionDefinition = systemCoreDefinition.MainModule.Types.First(x => x.Name == "Action");
+            }
+            _actionDef = actionDefinition;
+            _action = ModuleDefinition.Import(actionDefinition);
+
+            actionDefinition = systemRuntimeTypes.FirstOrDefault(x => x.Name == "Action`1");
+            if (actionDefinition == null)
+            {
+                actionDefinition = systemTypes.FirstOrDefault(x => x.Name == "Action`1");
+            }
+            if (actionDefinition == null)
+            {
+                actionDefinition = systemCoreDefinition.MainModule.Types.First(x => x.Name == "Action`1");
+            }
+            _actionOfTDef = actionDefinition;
+            _actionOfT = ModuleDefinition.Import(actionDefinition);
+
+            var funcFilter = new Func<TypeDefinition, bool>(x => x.Name.StartsWith("Func") && x.HasGenericParameters && x.GenericParameters.Count == 1);
+            var funcDefinition = systemRuntimeTypes.FirstOrDefault(funcFilter);
+            if (funcDefinition == null)
+            {
+                funcDefinition = systemTypes.FirstOrDefault(funcFilter);
+            }
+            if (funcDefinition == null)
+            {
+                funcDefinition = systemCoreDefinition.MainModule.Types.First(funcFilter);
+            }
+            _funcOfTDef = funcDefinition;
+            _funcOfT = ModuleDefinition.Import(funcDefinition);
+
+            var predicateFilter = new Func<TypeDefinition, bool>(x => x.Name.StartsWith("Predicate") && x.HasGenericParameters && x.GenericParameters.Count == 1);
+            var predicateDefinition = systemRuntimeTypes.FirstOrDefault(predicateFilter);
+            if (predicateDefinition == null)
+            {
+                predicateDefinition = systemTypes.FirstOrDefault(predicateFilter);
+            }
+            if (predicateDefinition == null)
+            {
+                predicateDefinition = systemCoreDefinition.MainModule.Types.First(predicateFilter);
+            }
+            _predicateOfTDef = predicateDefinition;
+            _predicateOfT = ModuleDefinition.Import(predicateDefinition);
+
+            var argumentNullException = systemRuntimeTypes.FirstOrDefault(x => x.Name == "ArgumentNullException");
+            if (argumentNullException == null)
+            {
+                argumentNullException = systemTypes.First(x => x.Name == "ArgumentNullException");
+            }
+            _argumentNullExceptionDef = argumentNullException;
+            _argumentNullException = ModuleDefinition.Import(argumentNullException);
+
+            var systemObjectModelDef = assemblyResolver.Resolve("System.ObjectModel");
+            var objectModelTypes  = systemObjectModelDef.MainModule.Types;
+            var iCommandDefinition = objectModelTypes.FirstOrDefault(x => x.Name == "ICommand");
+            if (iCommandDefinition == null)
+            {
+                iCommandDefinition = systemTypes.FirstOrDefault(x => x.Name == "ICommand");
+            }
+            _iCommandDef = iCommandDefinition;
+            _iCommand = ModuleDefinition.Import(iCommandDefinition);
+            if (_iCommand == null)
+            {
+                const string message = "Could not find type System.Windows.Input.ICommand.";
+                throw new WeavingException(message);
+            }            
+        }
 
         private IList<TypeDefinition> GetMscorlibTypes(string targetFramework)
         {
             targetFramework = targetFramework ?? string.Empty;
             if (targetFramework.StartsWith("WindowsPhone"))
             {
-                return new TypeDefinition[]{};
+                return new TypeDefinition[] { };
             }
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
             var msCoreLibDefinition = assemblyResolver.Resolve("mscorlib");

@@ -37,12 +37,15 @@ namespace Commander.Fody
             };
 
             var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, assets.TypeReferences.EventHandler);
-            method.Parameters.Add(eventHandlerParameter);
-            var il = method.Body.GetILProcessor();
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Call, assets.CommandManagerAddRequerySuggestedMethodReference));
-            il.Append(il.Create(OpCodes.Nop));
-            il.Append(il.Create(OpCodes.Ret));
+            method.Parameters.Add(eventHandlerParameter);            
+            if (assets.CommandManagerAddRequerySuggestedMethodReference != null)
+            {
+                var il = method.Body.GetILProcessor();
+                il.Append(il.Create(OpCodes.Ldarg_1));
+                il.Append(il.Create(OpCodes.Call, assets.CommandManagerAddRequerySuggestedMethodReference));
+                il.Append(il.Create(OpCodes.Nop));
+                il.Append(il.Create(OpCodes.Ret));   
+            }            
             return method;
         }
 
@@ -58,11 +61,14 @@ namespace Commander.Fody
 
             var eventHandlerParameter = new ParameterDefinition("value", ParameterAttributes.None, assets.TypeReferences.EventHandler);
             method.Parameters.Add(eventHandlerParameter);
-            var il = method.Body.GetILProcessor();
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Call, assets.CommandManagerRemoveRequerySuggestedMethodReference));
-            il.Append(il.Create(OpCodes.Nop));
-            il.Append(il.Create(OpCodes.Ret));
+            if (assets.CommandManagerRemoveRequerySuggestedMethodReference != null)
+            {
+                var il = method.Body.GetILProcessor();
+                il.Append(il.Create(OpCodes.Ldarg_1));
+                il.Append(il.Create(OpCodes.Call, assets.CommandManagerRemoveRequerySuggestedMethodReference));
+                il.Append(il.Create(OpCodes.Nop));
+                il.Append(il.Create(OpCodes.Ret));
+            }            
             return method;
         }        
     }
