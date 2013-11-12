@@ -6,7 +6,7 @@ using Mono.Cecil;
 
 namespace Commander.Fody
 {
-    public abstract class ModuleProcessorBase
+    public abstract class ModuleProcessorBase : IModuleProcessor
     {
         [NotNull] private readonly ModuleWeaver _moduleWeaver;
         [NotNull]private readonly ModuleWeaverSettings _settings;
@@ -41,6 +41,11 @@ namespace Commander.Fody
         public ModuleDefinition ModuleDefinition
         {
             get { return _moduleDefinition; }
+        }
+
+        public IFodyLogger Logger
+        {
+            get { return ModuleWeaver; }
         }
 
         public abstract void Execute();        

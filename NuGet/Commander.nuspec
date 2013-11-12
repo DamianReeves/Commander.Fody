@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <iconUrl>https://raw.github.com/DamianReeves/Commander.Fody/master/Icons/package_icon.png</iconUrl>
     <description>Fody add-in for command invoking and implementation.</description>
-    <releaseNotes>Now supports PCL and WinRT.</releaseNotes>
+    <releaseNotes>Now adds Commander dll for attributes and removes the assembly and attributes after weaving.</releaseNotes>
     <language>en</language>
     <tags>Commander, ILWeaving, Fody, Cecil</tags>
     <dependencies>

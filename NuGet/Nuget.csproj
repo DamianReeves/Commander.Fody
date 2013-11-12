@@ -34,6 +34,10 @@
     <Copy SourceFiles="$(SolutionDir)NuGet\Commander.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)Fody\bin\$(ConfigurationName)\Commander.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)Fody\bin\$(ConfigurationName)\Commander.Fody.pdb" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    
+    <Copy SourceFiles="$(SolutionDir)Commander\bin\$(ConfigurationName)\Commander.dll" DestinationFolder="$(SolutionDir)NuGetBuild\lib" />
+    <Copy SourceFiles="$(SolutionDir)Commander\bin\$(ConfigurationName)\Commander.pdb" DestinationFolder="$(SolutionDir)NuGetBuild\lib" />
+    
     <Copy SourceFiles="$(ProjectDir)install.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
     <Copy SourceFiles="$(ProjectDir)uninstall.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
     <PepitaPackage.WeavingTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)Fody\bin\$(ConfigurationName)\Commander.Fody.dll" />

@@ -90,12 +90,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TestAssemblies\AssemblyToProcessPhone8\AssemblyToProcessPhone8.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
+    <Folder Include="AttributeReaders\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="AttributeReaders\" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -105,5 +103,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="$(SolutionDir)Tools\Pepita\PepitaGet.targets" />
 </Project>
