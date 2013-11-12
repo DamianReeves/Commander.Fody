@@ -41,14 +41,10 @@ namespace Commander.Fody
         void ProcessType(TypeDefinition type)
         {
             RemoveAttributes(type.CustomAttributes);
-            foreach (var property in type.Properties)
+            foreach (var method in type.Methods)
             {
-                RemoveAttributes(property.CustomAttributes);
-            }
-            foreach (var field in type.Fields)
-            {
-                RemoveAttributes(field.CustomAttributes);
-            }
+                RemoveAttributes(method.CustomAttributes);
+            }            
         }
 
         void RemoveAttributes(Collection<CustomAttribute> customAttributes)
