@@ -9,7 +9,12 @@ using Mono.Cecil.Cil;
 
 namespace Commander.Fody
 {
-    public class ModuleWeaver: IFodyLogger
+    public interface IModuleWeaver
+    {
+        ModuleDefinition ModuleDefinition { get; set; }
+        string AssemblyFilePath { get; set; }
+    }
+    public class ModuleWeaver: IModuleWeaver, IFodyLogger
     {
         public ModuleWeaver()
         {
@@ -31,11 +36,13 @@ namespace Commander.Fody
         public Action<string, SequencePoint> LogErrorPoint { get; set; }
 
         public ModuleDefinition ModuleDefinition { get; set; }
+        public string AssemblyFilePath { get; set; }
         public IAssemblyResolver AssemblyResolver { get; set; }
         public Assets Assets { get; private set; }        
 
         public void Execute()
         {
+            LogWarning(string.Format("AssemblyFilePath is {0}", AssemblyFilePath));
             var container = CreateContainer();
             ConfigureContainer(container);
             Setup();

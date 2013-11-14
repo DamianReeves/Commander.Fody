@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commander", "Commander\Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcessSilverlight", "TestAssemblies\AssemblyToProcessSilverlight\AssemblyToProcessSilverlight.csproj", "{CC8917A7-C14E-468A-9C70-68C370F6049F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcessPhone8", "TestAssemblies\AssemblyToProcessPhone8\AssemblyToProcessPhone8.csproj", "{C977ED45-DF52-46BE-B889-B01113472751}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +135,24 @@ Global
 		{CC8917A7-C14E-468A-9C70-68C370F6049F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC8917A7-C14E-468A-9C70-68C370F6049F}.Release|ARM.ActiveCfg = Release|Any CPU
 		{CC8917A7-C14E-468A-9C70-68C370F6049F}.Release|x86.ActiveCfg = Release|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Debug|ARM.ActiveCfg = Debug|ARM
+		{C977ED45-DF52-46BE-B889-B01113472751}.Debug|ARM.Build.0 = Debug|ARM
+		{C977ED45-DF52-46BE-B889-B01113472751}.Debug|x86.ActiveCfg = Debug|x86
+		{C977ED45-DF52-46BE-B889-B01113472751}.Debug|x86.Build.0 = Debug|x86
+		{C977ED45-DF52-46BE-B889-B01113472751}.Deployable|Any CPU.ActiveCfg = Debug|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Deployable|Any CPU.Build.0 = Debug|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Deployable|ARM.ActiveCfg = Debug|ARM
+		{C977ED45-DF52-46BE-B889-B01113472751}.Deployable|ARM.Build.0 = Debug|ARM
+		{C977ED45-DF52-46BE-B889-B01113472751}.Deployable|x86.ActiveCfg = Debug|x86
+		{C977ED45-DF52-46BE-B889-B01113472751}.Deployable|x86.Build.0 = Debug|x86
+		{C977ED45-DF52-46BE-B889-B01113472751}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C977ED45-DF52-46BE-B889-B01113472751}.Release|ARM.ActiveCfg = Release|ARM
+		{C977ED45-DF52-46BE-B889-B01113472751}.Release|ARM.Build.0 = Release|ARM
+		{C977ED45-DF52-46BE-B889-B01113472751}.Release|x86.ActiveCfg = Release|x86
+		{C977ED45-DF52-46BE-B889-B01113472751}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,5 +162,6 @@ Global
 		{F1E40E1D-F62F-4FB3-8910-6B6D90C1D9C5} = {D462C517-68B6-4BBC-9F79-816EF4DF4580}
 		{7FEAEC4A-FAD6-4C0E-A4B6-7840FF02E70B} = {D462C517-68B6-4BBC-9F79-816EF4DF4580}
 		{CC8917A7-C14E-468A-9C70-68C370F6049F} = {D462C517-68B6-4BBC-9F79-816EF4DF4580}
+		{C977ED45-DF52-46BE-B889-B01113472751} = {D462C517-68B6-4BBC-9F79-816EF4DF4580}
 	EndGlobalSection
 EndGlobal

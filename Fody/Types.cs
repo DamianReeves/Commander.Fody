@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Mono.Cecil;
+using Mono.Collections.Generic;
 
 namespace Commander.Fody
 {
@@ -85,8 +86,7 @@ namespace Commander.Fody
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
             var msCoreTypes = GetMscorlibTypes(targetFramework);
 
-            var systemDefinition = assemblyResolver.Resolve("System");
-            var systemTypes = systemDefinition.MainModule.Types;
+            var systemTypes = GetSystemTypes(targetFramework);            
 
             var objectDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Object")
                 ?? systemTypes.FirstOrDefault(x => x.Name == "Object");
@@ -390,15 +390,41 @@ namespace Commander.Fody
         private IList<TypeDefinition> GetMscorlibTypes(string targetFramework)
         {
             targetFramework = targetFramework ?? string.Empty;
+            //if (targetFramework.StartsWith("WindowsPhone"))
+            //{
+            //    return new TypeDefinition[] { };
+            //}
+            var assemblyResolver = ModuleDefinition.AssemblyResolver;
+            var corlibFullName = (AssemblyNameReference)ModuleDefinition.TypeSystem.Corlib;
+            try
+            {
+                var msCoreLibDefinition = assemblyResolver.Resolve(corlibFullName);
+                var msCoreTypes = msCoreLibDefinition.MainModule.Types;
+                return msCoreTypes;
+            }
+            catch (Exception ex)
+            {
+                string message = string.Format("Failed to load corlib assembly [{0}].", corlibFullName)
+                    + Environment.NewLine
+                    + "Error was:"+ex.ToString();
+                throw new WeavingException(message);
+            }
+        }
+
+        private IList<TypeDefinition> GetSystemTypes(string targetFramework)
+        {
+            targetFramework = targetFramework ?? string.Empty;
             if (targetFramework.StartsWith("WindowsPhone"))
             {
+                //string message = "Could not find the System assembly for target framework ("+targetFramework+").";
+                //throw new WeavingException(message);
                 return new TypeDefinition[] { };
             }
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
-            var msCoreLibDefinition = assemblyResolver.Resolve("mscorlib");
-            var msCoreTypes = msCoreLibDefinition.MainModule.Types;
-            return msCoreTypes;
-        }
+            var systemDef = assemblyResolver.Resolve("System");
+            var types = systemDef.MainModule.Types;
+            return types;
+        } 
 
         private AssemblyDefinition GetPrimaryICommandSearchLocation(string targetFramework)
         {
