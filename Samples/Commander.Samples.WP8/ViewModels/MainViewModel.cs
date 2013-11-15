@@ -82,6 +82,12 @@ namespace Commander.Samples.WP8.ViewModels
             this.IsDataLoaded = true;
         }
 
+        [Commander.OnCommand("TestCommand")]
+        public void TestCommandExecute()
+        {
+
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(String propertyName)
         {
