@@ -26,6 +26,17 @@ public class TestAssemblyResolver : IAssemblyResolver
                 directories.Add(string.Format(@"{0}\Reference Assemblies\Microsoft\Framework\Silverlight\{1}\Profile\{2}", GetProgramFilesPath(), versionReader.FrameworkVersionAsString, versionReader.TargetFrameworkProfile));
             }
         }
+        else if (versionReader.IsWindowsPhone)
+        {
+            if (string.IsNullOrEmpty(versionReader.TargetFrameworkProfile))
+            {
+                directories.Add(string.Format(@"{0}\Reference Assemblies\Microsoft\Framework\WindowsPhone\{1}\", GetProgramFilesPath(), versionReader.FrameworkVersionAsString));
+            }
+            else
+            {
+                directories.Add(string.Format(@"{0}\Reference Assemblies\Microsoft\Framework\WindowsPhone\{1}\Profile\{2}", GetProgramFilesPath(), versionReader.FrameworkVersionAsString, versionReader.TargetFrameworkProfile));
+            }
+        }
         else
         {
             if (string.IsNullOrEmpty(versionReader.TargetFrameworkProfile))

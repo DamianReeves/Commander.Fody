@@ -9,6 +9,7 @@ public class VersionReader
     public string FrameworkVersionAsString;
     public string TargetFrameworkProfile;
     public bool IsSilverlight;
+    public bool IsWindowsPhone;
 
     public VersionReader(string projectPath)
     {
@@ -43,6 +44,10 @@ public class VersionReader
         if (string.Equals(targetFrameworkIdentifier, "Silverlight", StringComparison.OrdinalIgnoreCase))
         {
             IsSilverlight = true;
+        }
+        else if (string.Equals(targetFrameworkIdentifier, "WindowsPhone", StringComparison.OrdinalIgnoreCase))
+        {
+            IsWindowsPhone = true;
         }
 
     }

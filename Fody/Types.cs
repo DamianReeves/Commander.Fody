@@ -434,6 +434,11 @@ namespace Commander.Fody
                 {                    
                     return ModuleDefinition.AssemblyResolver.Resolve("System.Windows");
                 }
+
+                if (targetFramework.Contains("WindowsPhone"))
+                {
+                    return ModuleDefinition.AssemblyResolver.Resolve("System");
+                }
                 return ModuleDefinition.AssemblyResolver.Resolve("PresentationCore");
             }
             catch (Exception exception)
