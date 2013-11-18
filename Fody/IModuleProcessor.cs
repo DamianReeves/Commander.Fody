@@ -1,6 +1,4 @@
-﻿using Mono.Cecil;
-
-namespace Commander.Fody
+﻿namespace Commander.Fody
 {
     public interface IModuleProcessor
     {

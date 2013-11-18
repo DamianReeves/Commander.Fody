@@ -66,6 +66,7 @@
     <Compile Include="CommandAttributeScanner.cs" />
     <Compile Include="EventInjection.cs" />
     <Compile Include="IModuleProcessor.cs" />
+    <Compile Include="ISingleTypeFinder.cs" />
     <Compile Include="LightInject\LightInject.cs" />
     <Compile Include="CanExecuteChangedEventInjection.cs" />
     <Compile Include="CommandData.cs" />
