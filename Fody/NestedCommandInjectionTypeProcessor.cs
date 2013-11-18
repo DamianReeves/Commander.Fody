@@ -12,6 +12,7 @@ namespace Commander.Fody
         private const MethodAttributes ConstructorDefaultMethodAttributes = 
             MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
         private const string OwnerFieldName = "_owner";
+        private const string CanExecuteChangedFieldName = "CanExecuteChanged";
 
         private readonly CommandData _command;
         private readonly MethodDefinition _initializeMethod;
@@ -58,6 +59,7 @@ namespace Commander.Fody
 
             var field = commandType.AddField(Type, OwnerFieldName);
             field.IsInitOnly = true;
+            //field = commandType.AddField(Assets.TypeReferences.EventHandler, CanExecuteChangedFieldName);
 
             ImplementICommandInterface(commandType);
 

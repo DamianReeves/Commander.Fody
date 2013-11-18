@@ -14,11 +14,13 @@ namespace Commander.Fody
         TypeReference ArgumentNullException { get; }
         TypeReference Boolean { get; }
         TypeReference CommandManager { get; }
+        TypeReference Delegate { get; }
         TypeReference EventHandler { get; }
         TypeReference FuncOfT { get; }
 //// ReSharper disable InconsistentNaming
         TypeReference ICommand { get; }
 //// ReSharper restore InconsistentNaming
+        TypeReference Interlocked { get; }
         TypeReference Object { get; }
         TypeReference String { get; }
         TypeReference Void { get; }
@@ -31,11 +33,13 @@ namespace Commander.Fody
         TypeDefinition ActionOfT { get; }
         TypeDefinition ArgumentNullException { get; }
         TypeDefinition CommandManager { get; }
+        TypeDefinition Delegate { get; }
         TypeDefinition EventHandler { get; }
         TypeDefinition FuncOfT { get; }
 //// ReSharper disable InconsistentNaming
         TypeDefinition ICommand { get; }
 //// ReSharper restore InconsistentNaming
+        TypeDefinition Interlocked { get; }
         TypeDefinition Object { get; }
         TypeDefinition PredicateOfT { get; }
     }
@@ -60,12 +64,16 @@ namespace Commander.Fody
         private TypeDefinition _funcOfTDef;
         private TypeReference _iCommand;
         private TypeDefinition _iCommandDef;
+        private TypeReference _interlocked;
+        private TypeDefinition _interlockedDef;
         private TypeReference _object;
         private TypeDefinition _objectDef;
         private TypeReference _string;
         private TypeReference _void;
         private TypeReference _predicateOfT;
         private TypeDefinition _predicateOfTDef;
+        private TypeReference _delegate;
+        private TypeDefinition _delegateDef;
 
         public Types([NotNull] ModuleWeaver moduleWeaver)
         {            
@@ -98,6 +106,11 @@ namespace Commander.Fody
             _objectDef = objectDefinition;
             _eventHandlerDef = msCoreTypes.First(x => x.Name == "EventHandler");
             _eventHandler = ModuleDefinition.Import(_eventHandlerDef);
+            _delegateDef = msCoreTypes.First(x => x.Name == "Delegate");
+            _delegate = ModuleDefinition.Import(_delegateDef);
+
+            _interlockedDef = msCoreTypes.First(x => x.FullName == "System.Threading.Interlocked");
+            _interlocked = ModuleDefinition.Import(_interlockedDef);
 
             var actionDefinition = msCoreTypes.FirstOrDefault(x => x.Name == "Action");
             if (actionDefinition == null)
@@ -224,6 +237,11 @@ namespace Commander.Fody
             get { return _iCommand; }
         }
 
+        TypeReference ITypeReferences.Interlocked
+        {
+            get { return _interlocked; }
+        }
+
         TypeReference ITypeReferences.Object
         {
             get { return _object; }
@@ -242,6 +260,11 @@ namespace Commander.Fody
         TypeReference ITypeReferences.PredicateOfT
         {
             get { return _predicateOfT; }
+        }
+
+        TypeReference ITypeReferences.Delegate
+        {
+            get { return _delegate; }
         }
 
         #region ITypeDefinitions Implementation
@@ -280,6 +303,11 @@ namespace Commander.Fody
             get { return _iCommandDef; }
         }
 
+        TypeDefinition ITypeDefinitions.Interlocked
+        {
+            get { return _interlockedDef; }
+        }
+
         TypeDefinition ITypeDefinitions.Object
         {
             get { return _objectDef; }
@@ -288,6 +316,11 @@ namespace Commander.Fody
         TypeDefinition ITypeDefinitions.PredicateOfT
         {
             get { return _predicateOfTDef; }
+        }
+
+        TypeDefinition ITypeDefinitions.Delegate
+        {
+            get { return _delegateDef; }
         }
         #endregion ITypeDefinitions Implementation
 
@@ -311,6 +344,11 @@ namespace Commander.Fody
             _objectDef = objectDefinition;
             _eventHandlerDef = systemRuntimeTypes.First(x => x.Name == "EventHandler");
             _eventHandler = ModuleDefinition.Import(_eventHandlerDef);
+            _delegateDef = systemRuntimeTypes.First(x => x.Name == "Delegate");
+            _delegate = ModuleDefinition.Import(_delegateDef);
+
+            _interlockedDef = systemRuntimeTypes.First(x => x.FullName == "System.Threading.Interlocked");
+            _interlocked = ModuleDefinition.Import(_interlockedDef);
 
             var actionDefinition = systemRuntimeTypes.FirstOrDefault(x => x.Name == "Action");
             if (actionDefinition == null)

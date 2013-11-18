@@ -184,6 +184,13 @@ namespace Commander.Fody
                 , actionGenericInstanceType);
 
             commandClass.Fields.Add(executeField);
+
+            var canExecuteChangedField = new FieldDefinition(
+                "CanExecuteChanged"
+                , FieldAttributes.Private
+                , Assets.TypeReferences.EventHandler);
+
+            commandClass.Fields.Add(canExecuteChangedField);
         }
 
         internal void AddExecuteMethod(TypeDefinition commandClass)

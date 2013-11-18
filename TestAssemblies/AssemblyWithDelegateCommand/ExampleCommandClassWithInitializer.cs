@@ -3,6 +3,14 @@ using System.Windows.Input;
 
 public class ExampleCommandClassWithInitializer
 {
+    public event EventHandler CommandsInitialized;
+
+    protected virtual void OnCommandsInitialized()
+    {
+        EventHandler handler = CommandsInitialized;
+        if (handler != null) handler(this, EventArgs.Empty);
+    }
+
     public ExampleCommandClassWithInitializer()
     {
         this.InitializeCommands();

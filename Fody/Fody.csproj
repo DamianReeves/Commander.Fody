@@ -64,9 +64,10 @@
     <Compile Include="CecilExtensions.cs" />
     <Compile Include="DelegateCommandClassInjectionProcessor.cs" />
     <Compile Include="CommandAttributeScanner.cs" />
+    <Compile Include="EventInjection.cs" />
     <Compile Include="IModuleProcessor.cs" />
     <Compile Include="LightInject\LightInject.cs" />
-    <Compile Include="MemberInjection.cs" />
+    <Compile Include="CanExecuteChangedEventInjection.cs" />
     <Compile Include="CommandData.cs" />
     <Compile Include="CommandPropertyInjector.cs" />
     <Compile Include="FodyLoggerExtensions.cs" />

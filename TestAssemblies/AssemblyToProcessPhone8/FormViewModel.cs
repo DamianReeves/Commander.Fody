@@ -22,6 +22,8 @@ namespace AssemblyToProcessPhone8
             CanExecuteParameters = new List<Tuple<string,object>>();
         }
 
+        public event EventHandler Submitted;        
+
         public IList<Tuple<string,object>> ExecuteParameters { get; set; }
         public IList<Tuple<string,object>> CanExecuteParameters { get; set; }
 
@@ -36,6 +38,7 @@ namespace AssemblyToProcessPhone8
         public void Submit(object parameter)
         {
             NotifyOfExecuted("SubmitCommand", parameter);
+            OnSubmitted();
         }
 
         protected void NotifyOfExecuted(string commandName, object parameter)
@@ -54,6 +57,12 @@ namespace AssemblyToProcessPhone8
             {
                 list.Add(Tuple.Create(commandName, parameter));
             }
+        }
+
+        protected virtual void OnSubmitted()
+        {
+            EventHandler handler = Submitted;
+            if (handler != null) handler(this, EventArgs.Empty);
         }
     }
 }

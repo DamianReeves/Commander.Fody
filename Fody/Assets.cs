@@ -27,6 +27,8 @@ namespace Commander.Fody
         private readonly MethodReference _predicateOfTInvokeReference;
         private readonly MethodReference _predicateOfTConstructorReference;
         private readonly MethodReference _argumentNullExceptionConstructorReference;
+        private readonly MethodReference _delegateCombineMethodReference;
+        private readonly MethodReference _interlockedCompareExchangeOfT;
         private readonly IList<MethodReference> _commandImplementationConstructors;        
 
         public Assets([NotNull] ModuleWeaver moduleWeaver)
@@ -59,7 +61,8 @@ namespace Commander.Fody
             _predicateOfTConstructorReference = ModuleDefinition.Import(predicateOfTConstructor);
             var predicateOfTInvokerDefinition = TypeDefinitions.PredicateOfT.Methods.First(x => x.Name == "Invoke");
             _predicateOfTInvokeReference = ModuleDefinition.Import(predicateOfTInvokerDefinition);
-
+            var delegateCombineDefinition = TypeDefinitions.Delegate.Methods.First(x => x.Name == "Combine" && x.Parameters.Count == 2);
+            _delegateCombineMethodReference = ModuleDefinition.Import(delegateCombineDefinition);
             if (TypeDefinitions.CommandManager != null)
             {
                 var requeryEvent = TypeDefinitions.CommandManager.Resolve().Events.Single(evt => evt.Name == "RequerySuggested");
@@ -156,6 +159,11 @@ namespace Commander.Fody
         public MethodReference PredicateOfTConstructorReference
         {
             get { return _predicateOfTConstructorReference; }
+        }
+
+        public MethodReference DelegateCombineMethodReference
+        {
+            get { return _delegateCombineMethodReference; }
         }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()
