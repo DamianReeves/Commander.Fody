@@ -28,7 +28,9 @@ namespace Commander.Fody
         private readonly MethodReference _predicateOfTConstructorReference;
         private readonly MethodReference _argumentNullExceptionConstructorReference;
         private readonly MethodReference _delegateCombineMethodReference;
+        private readonly MethodReference _delegateRemoveMethodReference;
         private readonly MethodReference _interlockedCompareExchangeOfT;
+        private readonly GenericInstanceMethod _interlockedCompareExchangeOfEventHandler;
         private readonly IList<MethodReference> _commandImplementationConstructors;        
 
         public Assets([NotNull] ModuleWeaver moduleWeaver)
@@ -63,6 +65,18 @@ namespace Commander.Fody
             _predicateOfTInvokeReference = ModuleDefinition.Import(predicateOfTInvokerDefinition);
             var delegateCombineDefinition = TypeDefinitions.Delegate.Methods.First(x => x.Name == "Combine" && x.Parameters.Count == 2);
             _delegateCombineMethodReference = ModuleDefinition.Import(delegateCombineDefinition);
+            var delegateRemoveDefinition = TypeDefinitions.Delegate.Methods.First(x => x.Name == "Remove" && x.Parameters.Count == 2);
+            _delegateRemoveMethodReference = ModuleDefinition.Import(delegateRemoveDefinition);
+
+            var interlockedCompareExchangeMethodDefinition = TypeDefinitions.Interlocked.Methods.First(
+                x => x.Name == "CompareExchange"
+                     && x.Parameters.Count == 3
+                     && x.HasGenericParameters
+            );
+            _interlockedCompareExchangeOfT = ModuleDefinition.Import(interlockedCompareExchangeMethodDefinition);
+            _interlockedCompareExchangeOfEventHandler = new GenericInstanceMethod(_interlockedCompareExchangeOfT);
+            _interlockedCompareExchangeOfEventHandler.GenericArguments.Add(TypeReferences.EventHandler);
+            //_interlockedCompareExchangeOfEventHandler = 
             if (TypeDefinitions.CommandManager != null)
             {
                 var requeryEvent = TypeDefinitions.CommandManager.Resolve().Events.Single(evt => evt.Name == "RequerySuggested");
@@ -164,6 +178,21 @@ namespace Commander.Fody
         public MethodReference DelegateCombineMethodReference
         {
             get { return _delegateCombineMethodReference; }
+        }
+
+        public MethodReference DelegateRemoveMethodReference
+        {
+            get { return _delegateRemoveMethodReference; }
+        }
+
+        public MethodReference InterlockedCompareExchangeOfEventHandler
+        {
+            get { return _interlockedCompareExchangeOfEventHandler; }
+        }
+
+        public MethodReference InterlockedCompareExchangeOfT
+        {
+            get { return _interlockedCompareExchangeOfT; }
         }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()

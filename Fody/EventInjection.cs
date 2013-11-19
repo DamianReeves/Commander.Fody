@@ -29,19 +29,22 @@ namespace Commander.Fody
                 method.Body.Variables.Add(varDef1);
                 var varDef2 = new VariableDefinition(eventType);
                 method.Body.Variables.Add(varDef2);
+                var varDef3 = new VariableDefinition(assets.TypeReferences.Boolean);
+                method.Body.Variables.Add(varDef3);
                 var field = targetType.Fields.FirstOrDefault(fld => fld.Name == eventName);
                 if (field == null)
                 {
-                    assets.Log.LogInfo(string.Format("Adding field {0} to {1} in CreateAddEvent.", 
+                    assets.Log.LogInfo(string.Format("Adding field {0} to {1} in CreateAddEventMethod.", 
                         eventName,
                         targetType.FullName));
                     field = targetType.AddField(eventType, eventName);
                 }
+                Instruction loopStart;
                 il.Append(il.Create(OpCodes.Nop));
                 il.Append(il.Create(OpCodes.Ldarg_0));
                 il.Append(il.Create(OpCodes.Ldfld, field));
                 il.Append(il.Create(OpCodes.Stloc_0));
-                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(loopStart = il.Create(OpCodes.Ldloc_0));
                 il.Append(il.Create(OpCodes.Stloc_1));
                 il.Append(il.Create(OpCodes.Ldloc_1));
                 il.Append(il.Create(OpCodes.Ldarg_1));
@@ -50,8 +53,18 @@ namespace Commander.Fody
                 il.Append(il.Create(OpCodes.Stloc_2));
                 il.Append(il.Create(OpCodes.Ldarg_0));
                 il.Append(il.Create(OpCodes.Ldflda, field));
+                il.Append(il.Create(OpCodes.Ldloc_2));
                 il.Append(il.Create(OpCodes.Ldloc_1));
-                //il.Append(il.Create(OpCodes.Call, assets.DelegateCombineMethodReference));
+                il.Append(il.Create(OpCodes.Call, assets.InterlockedCompareExchangeOfEventHandler));
+                il.Append(il.Create(OpCodes.Stloc_0));
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Ldloc_1));
+                il.Append(il.Create(OpCodes.Ceq));
+                il.Append(il.Create(OpCodes.Ldc_I4_0));
+                il.Append(il.Create(OpCodes.Ceq));
+                il.Append(il.Create(OpCodes.Stloc_3));
+                il.Append(il.Create(OpCodes.Ldloc_3));
+                il.Append(il.Create(OpCodes.Brtrue_S, loopStart));
                 il.Append(il.Create(OpCodes.Ret));
             }
             else
@@ -77,20 +90,50 @@ namespace Commander.Fody
             var il = method.Body.GetILProcessor();
             if (methodBodyWriter == null)
             {
-                var eventHandlerVarDef = new VariableDefinition("eventHandler", eventType);
-                method.Body.Variables.Add(eventHandlerVarDef);
+                var varDef0 = new VariableDefinition(eventType);
+                method.Body.Variables.Add(varDef0);
+                var varDef1 = new VariableDefinition(eventType);
+                method.Body.Variables.Add(varDef1);
+                var varDef2 = new VariableDefinition(eventType);
+                method.Body.Variables.Add(varDef2);
+                var varDef3 = new VariableDefinition(assets.TypeReferences.Boolean);
+                method.Body.Variables.Add(varDef3);
                 var field = targetType.Fields.FirstOrDefault(fld => fld.Name == eventName);
                 if (field == null)
                 {
-                    assets.Log.LogInfo(string.Format("Adding field {0} to {1} in CreateAddEvent.",
+                    assets.Log.LogInfo(string.Format("Adding field {0} to {1} in CreateRemoveEventMethod.",
                         eventName,
                         targetType.FullName));
                     field = targetType.AddField(eventType, eventName);
                 }
+                Instruction loopStart;
                 il.Append(il.Create(OpCodes.Nop));
                 il.Append(il.Create(OpCodes.Ldarg_0));
                 il.Append(il.Create(OpCodes.Ldfld, field));
                 il.Append(il.Create(OpCodes.Stloc_0));
+                loopStart = il.Create(OpCodes.Nop);
+                il.Append(loopStart);
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Stloc_1));
+                il.Append(il.Create(OpCodes.Ldloc_1));
+                il.Append(il.Create(OpCodes.Ldarg_1));
+                il.Append(il.Create(OpCodes.Call, assets.DelegateRemoveMethodReference));
+                il.Append(il.Create(OpCodes.Castclass, eventType));
+                il.Append(il.Create(OpCodes.Stloc_2));
+                il.Append(il.Create(OpCodes.Ldarg_0));
+                il.Append(il.Create(OpCodes.Ldflda, field));
+                il.Append(il.Create(OpCodes.Ldloc_2));
+                il.Append(il.Create(OpCodes.Ldloc_1));
+                il.Append(il.Create(OpCodes.Call, assets.InterlockedCompareExchangeOfEventHandler));
+                il.Append(il.Create(OpCodes.Stloc_0));
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Ldloc_1));
+                il.Append(il.Create(OpCodes.Ceq));
+                il.Append(il.Create(OpCodes.Ldc_I4_0));
+                il.Append(il.Create(OpCodes.Ceq));
+                il.Append(il.Create(OpCodes.Stloc_3));
+                il.Append(il.Create(OpCodes.Ldloc_3));
+                il.Append(il.Create(OpCodes.Brtrue_S, loopStart));
                 il.Append(il.Create(OpCodes.Ret));
             }
             else
