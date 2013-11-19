@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,12 +13,12 @@ namespace Commander.Samples.WP8.ViewModels
 {
     public class ItemViewModel : INotifyPropertyChanged
     {
-        private string _id;
+        private Int32 _id;
         /// <summary>
         /// Sample ViewModel property; this property is used to identify the object.
         /// </summary>
         /// <returns></returns>
-        public string ID
+        public int Id
         {
             get
             {
@@ -28,7 +29,7 @@ namespace Commander.Samples.WP8.ViewModels
                 if (value != _id)
                 {
                     _id = value;
-                    NotifyPropertyChanged("ID");
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -49,7 +50,7 @@ namespace Commander.Samples.WP8.ViewModels
                 if (value != _lineOne)
                 {
                     _lineOne = value;
-                    NotifyPropertyChanged("LineOne");
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -70,7 +71,7 @@ namespace Commander.Samples.WP8.ViewModels
                 if (value != _lineTwo)
                 {
                     _lineTwo = value;
-                    NotifyPropertyChanged("LineTwo");
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -91,13 +92,13 @@ namespace Commander.Samples.WP8.ViewModels
                 if (value != _lineThree)
                 {
                     _lineThree = value;
-                    NotifyPropertyChanged("LineThree");
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(String propertyName)
+        private void NotifyPropertyChanged([CallerMemberName]String propertyName=null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (null != handler)

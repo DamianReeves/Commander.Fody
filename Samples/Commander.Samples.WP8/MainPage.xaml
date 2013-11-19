@@ -44,7 +44,9 @@
         <StackPanel Grid.Row="0" Margin="12,17,0,28">
             <TextBlock Text="MY APPLICATION" Style="{StaticResource PhoneTextNormalStyle}"/>
             <TextBlock Text="page name" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}"/>
-            <HyperlinkButton Content="Click me" Command="{Binding TestCommand}" />
+            <StackPanel Orientation="Horizontal">
+                <HyperlinkButton Content="Add Items" Command="{Binding AddItemCommand}" />
+            </StackPanel>            
         </StackPanel>
 
         <!--ContentPanel contains LongListSelector and LongListSelector ItemTemplate. Place additional content here-->
@@ -55,7 +57,8 @@
                       <StackPanel Margin="0,0,0,17">
                           <TextBlock Text="{Binding LineOne}" TextWrapping="Wrap" Style="{StaticResource PhoneTextExtraLargeStyle}"/>
                           <TextBlock Text="{Binding LineTwo}" TextWrapping="Wrap" Margin="12,-6,12,0" Style="{StaticResource PhoneTextSubtleStyle}"/>
-                      </StackPanel>
+                          <HyperlinkButton Foreground="Red" Content="Remove" Command="{Binding RemoveItemCommand}" CommandParameter="{Binding}" />
+                        </StackPanel>
                     </DataTemplate>
                 </phone:LongListSelector.ItemTemplate>
             </phone:LongListSelector>

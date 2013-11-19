@@ -225,6 +225,22 @@ namespace Commander.Fody
                 var returnBlock = Instruction.Create(OpCodes.Nop);
                 il.Append(Instruction.Create(OpCodes.Ldarg_0));
                 il.Append(Instruction.Create(OpCodes.Ldfld, field));
+                if (canExecuteMethod.Parameters.Count == 1)
+                {
+                    il.Append(Instruction.Create(OpCodes.Ldarg_1));
+                    var parameter = canExecuteMethod.Parameters[0];
+                    if (!parameter.ParameterType.FullNameMatches(Assets.TypeReferences.Object))
+                    {
+                        if (parameter.ParameterType.IsGenericInstance)
+                        {
+
+                        }
+                        else
+                        {
+                            il.Append(Instruction.Create(OpCodes.Unbox_Any, parameter.ParameterType));
+                        }
+                    }
+                }               
                 if (canExecuteMethod.IsVirtual)
                 {
                     il.Append(Instruction.Create(OpCodes.Callvirt, canExecuteMethod));
