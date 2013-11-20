@@ -468,7 +468,7 @@ namespace Commander.Fody
         {
             try
             {
-                if (targetFramework.Contains("Portable"))
+                if (targetFramework.Contains("Portable") || targetFramework.Contains("Silverlight"))
                 {                    
                     return ModuleDefinition.AssemblyResolver.Resolve("System.Windows");
                 }
