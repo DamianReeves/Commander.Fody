@@ -6,24 +6,55 @@ using System.Windows.Input;
 
 namespace Commander.Commands
 {
-    public class DelegateCommand : ICommand
+    /// <summary>
+    /// Wraps a delegate as an <see cref="ICommand"/>.
+    /// </summary>
+    public class DelegateCommand : CommandBase
     {
-        public event EventHandler CanExecuteChanged;
+        private readonly Func<object, bool> _canExecute;
+        private readonly Action<object> _execute;
 
-        public bool CanExecute(object parameter)
+        public DelegateCommand(Action execute)
+            : this(execute, null)
         {
-            throw new NotImplementedException();
         }
 
-        public void Execute(object parameter)
+        public DelegateCommand(Action execute, Func<bool> canExecute)
         {
-            throw new NotImplementedException();
-        }        
+            if (execute == null)
+            {
+                throw new ArgumentNullException("execute");
+            }
+            _execute = obj => execute();
+            _canExecute = canExecute == null
+                ? new Func<object, bool>(obj => true)
+                : (obj => canExecute());
+        }
 
-        protected virtual void OnCanExecuteChanged()
+        public DelegateCommand(Action<object> execute, Func<object, bool> canExecute)
         {
-            EventHandler handler = CanExecuteChanged;
-            if (handler != null) handler(this, EventArgs.Empty);
+            if (execute == null)
+            {
+                throw new ArgumentNullException("execute");
+            }
+            _execute = execute;
+            _canExecute = canExecute ?? (obj => true);
+        }
+
+        public override void Execute(object parameter)
+        {
+            _execute(parameter);
+        }
+
+        public override bool CanExecute(object parameter)
+        {
+            return _canExecute(parameter);
+        }
+        
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1030:UseEventsWhereAppropriate")]
+        public void RaiseCanExecuteChanged()
+        {
+            OnCanExecuteChanged();
         }
     }
 }

@@ -61,6 +61,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Commander.Commands\Commander.Commands.csproj">
+      <Project>{97fd4102-d525-459f-82a1-96d72bdb86d1}</Project>
+      <Name>Commander.Commands</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Commander\Commander.csproj">
       <Project>{5e21535f-27c7-41a5-8831-4276723a4397}</Project>
       <Name>Commander</Name>

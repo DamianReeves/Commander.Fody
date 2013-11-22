@@ -10,6 +10,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Commander;
 
+[assembly:Commander.CommandImplementation(typeof(Commander.Commands.DelegateCommand))]
+
 namespace AssemblyToProcessSilverlight
 {
     public class FooViewModel

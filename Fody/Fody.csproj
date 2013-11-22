@@ -65,7 +65,12 @@
     <Compile Include="DelegateCommandClassInjectionProcessor.cs" />
     <Compile Include="CommandAttributeScanner.cs" />
     <Compile Include="EventInjection.cs" />
+    <Compile Include="AssemblyLevelCommandImplementationFinder.cs" />
+    <Compile Include="ICommandImplementationFinder.cs" />
+    <Compile Include="CommandInjectionAdviceBase.cs" />
     <Compile Include="IModuleProcessor.cs" />
+    <Compile Include="Implementations\FodyDelegateCommand\FodyDelegateCommandInjectionAdvice.cs" />
+    <Compile Include="Implementations\NestedCommands\NestedCommandInjectionAdvice.cs" />
     <Compile Include="ISingleTypeFinder.cs" />
     <Compile Include="LightInject\LightInject.cs" />
     <Compile Include="CanExecuteChangedEventInjection.cs" />

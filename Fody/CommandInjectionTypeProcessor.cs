@@ -36,13 +36,13 @@ namespace Commander.Fody
    
         internal void InjectCommandProperties()
         {
-            var commandTypeReference = Assets.TypeReferences.ICommand;
+            var iCommandTypeReference = Assets.TypeReferences.ICommand;
             foreach (var commandData in Commands)
             {
                 try
                 {
                     PropertyDefinition propertyDefinition;
-                    if (Type.TryAddCommandProperty(commandTypeReference, commandData.CommandName, out propertyDefinition))
+                    if (Type.TryAddCommandProperty(iCommandTypeReference, commandData.CommandName, out propertyDefinition))
                     {
                         Assets.Log.Info("Successfully added a property for command: {0}.", commandData.CommandName);
                     }
