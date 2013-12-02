@@ -13,7 +13,7 @@ Injects ICommand properties and implementations for use in MVVM applications.
     {
         [OnCommandCanExecute("SubmitCommand")]
         public bool CanSubmit(){}
-        [OnCommandExecute("SubmitCommand")]
+        [OnCommand("SubmitCommand")]
         public void OnSubmit(){}        
     }
 
