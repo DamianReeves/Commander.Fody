@@ -12,9 +12,14 @@ Injects ICommand properties and implementations for use in MVVM applications.
     public class SurveyViewModel
     {
         [OnCommandCanExecute("SubmitCommand")]
-        public bool CanSubmit(){}
+        public bool CanSubmit()
+        {
+            ... 
+        }
         [OnCommand("SubmitCommand")]
-        public void OnSubmit(){}        
+        public void OnSubmit(){
+            ...
+        }        
     }
 
 With a command implementation in assembly like:
@@ -52,10 +57,12 @@ With a command implementation in assembly like:
         }
         public ICommand SubmitCommand {get;set;}
 
-        [OnCommandCanExecute("SubmitCommand")]
-        public bool CanSubmit(){}
-        [OnCommandExecute("SubmitCommand")]
-        public void OnSubmit(){}   
+        public bool CanSubmit(){ 
+            ...
+        }
+        public void OnSubmit(){
+            ...
+        }   
 
         private void <Commander_Fody>InitializeCommands()
         {
