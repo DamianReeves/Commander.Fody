@@ -11,7 +11,7 @@ public static class Verifier
 
         if (!File.Exists(exePath))
         {
-            exePath = Environment.ExpandEnvironmentVariables(@"%programfiles(x86)%\Microsoft SDKs\Windows\v8.0A\Bin\NETFX 4.0 Tools\PEVerify.exe");
+            exePath = Environment.ExpandEnvironmentVariables(@"%programfiles(x86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\PEVerify.exe");
         }
         var process = Process.Start(new ProcessStartInfo(exePath, string.Format("\"{0}\" /IGNORE=0x80070002", assemblyPath2))
                                         {
