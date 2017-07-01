@@ -110,3 +110,4 @@ UpgradeLog*.XML
 .vs/
 .vscode/
 Commander.sln.ide/
+TestAssemblyBin/
