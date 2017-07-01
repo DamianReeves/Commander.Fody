@@ -12,188 +12,110 @@ namespace Commander.Fody
     public class Assets
     {                
         private readonly Lazy<List<TypeDefinition>> _allClasses;
-        private readonly ModuleDefinition _moduleDefinition;
-        private readonly IFodyLogger _log;
-        private readonly ITypeReferences _typeReferences;
-        private readonly ITypeDefinitions _typeDefinitions;
-        private readonly ConcurrentDictionary<string, CommandData> _commands;
 
-        private readonly MethodReference _funcOfBoolConstructorReference;
-        private readonly MethodReference _objectConstructorReference;
-        private readonly MethodReference _commandManagerAddRequerySuggestedMethodReference;
-        private readonly MethodReference _commandManagerRemoveRequerySuggestedMethodReference;
-        private readonly MethodReference _actionOfTInvokeReference;
-        private readonly MethodReference _actionOfTConstructorReference;
-        private readonly MethodReference _predicateOfTInvokeReference;
-        private readonly MethodReference _predicateOfTConstructorReference;
-        private readonly MethodReference _argumentNullExceptionConstructorReference;
-        private readonly MethodReference _delegateCombineMethodReference;
-        private readonly MethodReference _delegateRemoveMethodReference;
-        private readonly MethodReference _interlockedCompareExchangeOfT;
         private readonly GenericInstanceMethod _interlockedCompareExchangeOfEventHandler;
-        private readonly IList<MethodReference> _commandImplementationConstructors;        
 
         public Assets([NotNull] ModuleWeaver moduleWeaver)
         {
             if (moduleWeaver == null)
             {
-                throw new ArgumentNullException("moduleWeaver");
+                throw new ArgumentNullException(nameof(moduleWeaver));
             }
 
-            _commands = new ConcurrentDictionary<string, CommandData>();
-            _moduleDefinition = moduleWeaver.ModuleDefinition;
-            _log = moduleWeaver;
+            Commands = new ConcurrentDictionary<string, CommandData>();
+            ModuleDefinition = moduleWeaver.ModuleDefinition;
+            Log = moduleWeaver;
             var settings = moduleWeaver.Settings;
             _allClasses = new Lazy<List<TypeDefinition>>(()=> settings.GetAllTypes(moduleWeaver).ToList());
             var types = new Types(moduleWeaver);
-            _typeReferences = types;
-            _typeDefinitions = types;
+            TypeReferences = types;
+            TypeDefinitions = types;
             
             var constructorDefinition = TypeDefinitions.Object.Methods.First(x => x.IsConstructor);
-            _objectConstructorReference = ModuleDefinition.ImportReference(constructorDefinition);
+            ObjectConstructorReference = ModuleDefinition.ImportReference(constructorDefinition);
             var actionConstructor = TypeDefinitions.Action.Methods.First(x => x.IsConstructor);
             ActionConstructorReference = ModuleDefinition.ImportReference(actionConstructor);
             var actionOfTConstructor = TypeDefinitions.ActionOfT.GetConstructors().First();
-            _actionOfTConstructorReference = ModuleDefinition.ImportReference(actionOfTConstructor);
+            ActionOfTConstructorReference = ModuleDefinition.ImportReference(actionOfTConstructor);
             var actionOfTInvokerDefinition = TypeDefinitions.ActionOfT.Methods.First(x => x.Name == "Invoke");
-            _actionOfTInvokeReference = ModuleDefinition.ImportReference(actionOfTInvokerDefinition);            
+            ActionOfTInvokeReference = ModuleDefinition.ImportReference(actionOfTInvokerDefinition);            
             var funcConstructor = TypeDefinitions.FuncOfT.Resolve().Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
-            _funcOfBoolConstructorReference = ModuleDefinition.ImportReference(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);
+            FuncOfBoolConstructorReference = ModuleDefinition.ImportReference(funcConstructor).MakeHostInstanceGeneric(TypeReferences.Boolean);
             var predicateOfTConstructor = TypeDefinitions.PredicateOfT.GetConstructors().First();
-            _predicateOfTConstructorReference = ModuleDefinition.ImportReference(predicateOfTConstructor);
+            PredicateOfTConstructorReference = ModuleDefinition.ImportReference(predicateOfTConstructor);
             var predicateOfTInvokerDefinition = TypeDefinitions.PredicateOfT.Methods.First(x => x.Name == "Invoke");
-            _predicateOfTInvokeReference = ModuleDefinition.ImportReference(predicateOfTInvokerDefinition);
+            PredicateOfTInvokeReference = ModuleDefinition.ImportReference(predicateOfTInvokerDefinition);
             var delegateCombineDefinition = TypeDefinitions.Delegate.Methods.First(x => x.Name == "Combine" && x.Parameters.Count == 2);
-            _delegateCombineMethodReference = ModuleDefinition.ImportReference(delegateCombineDefinition);
+            DelegateCombineMethodReference = ModuleDefinition.ImportReference(delegateCombineDefinition);
             var delegateRemoveDefinition = TypeDefinitions.Delegate.Methods.First(x => x.Name == "Remove" && x.Parameters.Count == 2);
-            _delegateRemoveMethodReference = ModuleDefinition.ImportReference(delegateRemoveDefinition);
+            DelegateRemoveMethodReference = ModuleDefinition.ImportReference(delegateRemoveDefinition);
 
             var interlockedCompareExchangeMethodDefinition = TypeDefinitions.Interlocked.Methods.First(
                 x => x.Name == "CompareExchange"
                      && x.Parameters.Count == 3
                      && x.HasGenericParameters
             );
-            _interlockedCompareExchangeOfT = ModuleDefinition.ImportReference(interlockedCompareExchangeMethodDefinition);
-            _interlockedCompareExchangeOfEventHandler = new GenericInstanceMethod(_interlockedCompareExchangeOfT);
+            InterlockedCompareExchangeOfT = ModuleDefinition.ImportReference(interlockedCompareExchangeMethodDefinition);
+            _interlockedCompareExchangeOfEventHandler = new GenericInstanceMethod(InterlockedCompareExchangeOfT);
             _interlockedCompareExchangeOfEventHandler.GenericArguments.Add(TypeReferences.EventHandler);
             //_interlockedCompareExchangeOfEventHandler = 
             if (TypeDefinitions.CommandManager != null)
             {
                 var requeryEvent = TypeDefinitions.CommandManager.Resolve().Events.Single(evt => evt.Name == "RequerySuggested");
-                _commandManagerAddRequerySuggestedMethodReference = ModuleDefinition.ImportReference(requeryEvent.AddMethod);
-                _commandManagerRemoveRequerySuggestedMethodReference = ModuleDefinition.ImportReference(requeryEvent.RemoveMethod);
+                CommandManagerAddRequerySuggestedMethodReference = ModuleDefinition.ImportReference(requeryEvent.AddMethod);
+                CommandManagerRemoveRequerySuggestedMethodReference = ModuleDefinition.ImportReference(requeryEvent.RemoveMethod);
             }
-            _commandImplementationConstructors = GetCommandImplementationConstructors();
+            CommandImplementationConstructors = GetCommandImplementationConstructors();
 
             constructorDefinition =
                 TypeDefinitions.ArgumentNullException.Methods.Single(
                     x => x.IsConstructor && x.HasParameters && x.Parameters.Count == 1);
-            _argumentNullExceptionConstructorReference = ModuleDefinition.ImportReference(constructorDefinition);
+            ArgumentNullExceptionConstructorReference = ModuleDefinition.ImportReference(constructorDefinition);
         }
         
-        public ModuleDefinition ModuleDefinition
-        {
-            get { return _moduleDefinition; }
-        }
+        public ModuleDefinition ModuleDefinition { get; }
 
-        public IFodyLogger Log
-        {
-            get { return _log; }
-        }
+        public IFodyLogger Log { get; }
 
-        public List<TypeDefinition> AllClasses
-        {
-            get { return _allClasses.Value; }
-        }
+        public List<TypeDefinition> AllClasses => _allClasses.Value;
 
-        public ITypeReferences TypeReferences
-        {
-            get { return _typeReferences; }
-        }
+        public ITypeReferences TypeReferences { get; }
 
-        public ITypeDefinitions TypeDefinitions
-        {
-            get { return _typeDefinitions; }
-        }
+        public ITypeDefinitions TypeDefinitions { get; }
 
-        public MethodReference ActionConstructorReference { get; private set; }
+        public MethodReference ActionConstructorReference { get; }
 
-        public IList<MethodReference> CommandImplementationConstructors
-        {
-            get { return _commandImplementationConstructors; }
-        }        
+        public IList<MethodReference> CommandImplementationConstructors { get; }
 
-        public MethodReference FuncOfBoolConstructorReference
-        {
-            get { return _funcOfBoolConstructorReference; }
-        }
+        public MethodReference FuncOfBoolConstructorReference { get; }
 
-        public MethodReference ObjectConstructorReference
-        {
-            get { return _objectConstructorReference; }
-        }        
+        public MethodReference ObjectConstructorReference { get; }
 
-        public MethodReference CommandManagerAddRequerySuggestedMethodReference
-        {
-            get { return _commandManagerAddRequerySuggestedMethodReference; }
-        }
+        public MethodReference CommandManagerAddRequerySuggestedMethodReference { get; }
 
-        public MethodReference CommandManagerRemoveRequerySuggestedMethodReference
-        {
-            get { return _commandManagerRemoveRequerySuggestedMethodReference; }
-        }
+        public MethodReference CommandManagerRemoveRequerySuggestedMethodReference { get; }
 
-        public MethodReference ActionOfTConstructorReference
-        {
-            get { return _actionOfTConstructorReference; }
-        }
+        public MethodReference ActionOfTConstructorReference { get; }
 
-        public MethodReference ActionOfTInvokeReference
-        {
-            get { return _actionOfTInvokeReference; }
-        }
+        public MethodReference ActionOfTInvokeReference { get; }
 
-        public MethodReference ArgumentNullExceptionConstructorReference
-        {
-            get { return _argumentNullExceptionConstructorReference; }
-        }
+        public MethodReference ArgumentNullExceptionConstructorReference { get; }
 
-        public MethodReference PredicateOfTInvokeReference
-        {
-            get { return _predicateOfTInvokeReference; }
-        }
+        public MethodReference PredicateOfTInvokeReference { get; }
 
-        public ConcurrentDictionary<string, CommandData> Commands
-        {
-            get { return _commands; }
-        }
+        public ConcurrentDictionary<string, CommandData> Commands { get; }
 
         public bool DelegateCommandImplementationWasInjected { get; set; }
 
-        public MethodReference PredicateOfTConstructorReference
-        {
-            get { return _predicateOfTConstructorReference; }
-        }
+        public MethodReference PredicateOfTConstructorReference { get; }
 
-        public MethodReference DelegateCombineMethodReference
-        {
-            get { return _delegateCombineMethodReference; }
-        }
+        public MethodReference DelegateCombineMethodReference { get; }
 
-        public MethodReference DelegateRemoveMethodReference
-        {
-            get { return _delegateRemoveMethodReference; }
-        }
+        public MethodReference DelegateRemoveMethodReference { get; }
 
-        public MethodReference InterlockedCompareExchangeOfEventHandler
-        {
-            get { return _interlockedCompareExchangeOfEventHandler; }
-        }
+        public MethodReference InterlockedCompareExchangeOfEventHandler => _interlockedCompareExchangeOfEventHandler;
 
-        public MethodReference InterlockedCompareExchangeOfT
-        {
-            get { return _interlockedCompareExchangeOfT; }
-        }
+        public MethodReference InterlockedCompareExchangeOfT { get; }
 
         internal IList<MethodReference> GetCommandImplementationConstructors()
         {

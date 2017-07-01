@@ -7,53 +7,23 @@ namespace Commander.Fody
 {
     public class CommandData
     {
-        private readonly string _commandName;
-        private readonly TypeDefinition _declaringType;
-        private readonly List<MethodDefinition> _onExecuteMethods;
-        private readonly List<MethodDefinition> _canExecuteMethods;        
-
         public CommandData([NotNull] TypeDefinition declaringType, [NotNull] string commandName)
         {
-            if (declaringType == null)
-            {
-                throw new ArgumentNullException("declaringType");
-            }
-
-            if (commandName == null)
-            {
-                throw new ArgumentNullException("commandName");
-            }
-
-            _declaringType = declaringType;
-            _commandName = commandName;
-            _onExecuteMethods = new List<MethodDefinition>();
-            _canExecuteMethods = new List<MethodDefinition>();
+            DeclaringType = declaringType ?? throw new ArgumentNullException(nameof(declaringType));
+            CommandName = commandName ?? throw new ArgumentNullException(nameof(commandName));
+            OnExecuteMethods = new List<MethodDefinition>();
+            CanExecuteMethods = new List<MethodDefinition>();
         }
 
-        public TypeDefinition DeclaringType
-        {
-            get { return _declaringType; }
-        }
+        public TypeDefinition DeclaringType { get; }
 
-        public string CommandName
-        {
-            get { return _commandName; }
-        }
+        public string CommandName { get; }
 
-        public bool PropertyInjectionRequired
-        {
-            get { return CommandProperty == null; }
-        }        
+        public bool PropertyInjectionRequired => CommandProperty == null;
 
-        public List<MethodDefinition> OnExecuteMethods
-        {
-            get { return _onExecuteMethods; }
-        }
+        public List<MethodDefinition> OnExecuteMethods { get; }
 
-        public List<MethodDefinition> CanExecuteMethods
-        {
-            get { return _canExecuteMethods; }
-        }
+        public List<MethodDefinition> CanExecuteMethods { get; }
 
         public bool PropertyInjectionApplied { get; set; }
         public bool CommandInitializationInjected { get; set; }

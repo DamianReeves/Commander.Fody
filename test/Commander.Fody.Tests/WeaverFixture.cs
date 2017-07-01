@@ -11,7 +11,8 @@ public class WeaverFixture
 {
     private readonly object _lock = new object();
     private string _assemblyName;
-    private string _targetFramework;
+    private string _targetFramework = "net462";
+    private string _fileExtension = ".dll";
     private WeaverHelper _weaverHelper;
 
 
@@ -51,6 +52,23 @@ public class WeaverFixture
         }
     }
 
+    public WeaverFixture SetExtension(string extension)
+    {
+        if (extension == null)
+        {
+            throw new ArgumentNullException(nameof(extension));
+        }
+
+        lock (_lock)
+        {
+            if (!string.Equals(extension, _fileExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                _fileExtension = extension;
+                _weaverHelper = null;
+            }
+            return this;
+        }
+    }
 
     public WeaverHelper GetWeaverHelper()
     {
@@ -58,7 +76,7 @@ public class WeaverFixture
         {
             if(_weaverHelper == null)
             {
-                _weaverHelper = new WeaverHelper(_assemblyName, _targetFramework);
+                _weaverHelper = new WeaverHelper(_assemblyName, _targetFramework, _fileExtension);
             }
             return _weaverHelper;
         }

@@ -47,7 +47,6 @@ namespace Commander.Fody
     public class Types : ITypeReferences, ITypeDefinitions
     {
         private readonly ModuleWeaver _moduleWeaver;
-        private readonly ModuleDefinition _moduleDefinition;
 
         private TypeReference _action;
         private TypeDefinition _actionDef;
@@ -76,14 +75,9 @@ namespace Commander.Fody
         private TypeDefinition _delegateDef;
 
         public Types([NotNull] ModuleWeaver moduleWeaver)
-        {            
-            if (moduleWeaver == null)
-            {
-                throw new ArgumentNullException("moduleWeaver");
-            }
-
-            _moduleWeaver = moduleWeaver;
-            var moduleDefinition = _moduleDefinition = moduleWeaver.ModuleDefinition;
+        {
+            _moduleWeaver = moduleWeaver ?? throw new ArgumentNullException(nameof(moduleWeaver));
+            var moduleDefinition = ModuleDefinition = moduleWeaver.ModuleDefinition;
 
             _string = moduleDefinition.TypeSystem.String;
             _void = moduleDefinition.TypeSystem.Void;
@@ -171,7 +165,7 @@ namespace Commander.Fody
             _argumentNullExceptionDef = argumentNullException;
             _argumentNullException = ModuleDefinition.ImportReference(argumentNullException);
 
-            var commandPrimaryAssemblyDef = GetPrimaryICommandSearchLocation(targetFramework);
+            var commandPrimaryAssemblyDef = GetPrimaryICommandAssemblyDefinition(targetFramework);
             var presentationCoreTypes = commandPrimaryAssemblyDef.MainModule.Types;
             var iCommandDefinition = presentationCoreTypes.FirstOrDefault(x => x.Name == "ICommand");
             if (iCommandDefinition == null)
@@ -197,116 +191,50 @@ namespace Commander.Fody
             }            
         }
 
-        TypeReference ITypeReferences.Action
-        {
-            get { return _action; }
-        }        
+        TypeReference ITypeReferences.Action => _action;
 
-        TypeReference ITypeReferences.ActionOfT
-        {
-            get { return _actionOfT; }
-        }        
+        TypeReference ITypeReferences.ActionOfT => _actionOfT;
 
-        TypeReference ITypeReferences.ArgumentNullException
-        {
-            get { return _argumentNullException; }
-        }
+        TypeReference ITypeReferences.ArgumentNullException => _argumentNullException;
 
-        TypeReference ITypeReferences.Boolean
-        {
-            get { return _boolean; }
-        }
+        TypeReference ITypeReferences.Boolean => _boolean;
 
-        TypeReference ITypeReferences.CommandManager
-        {
-            get { return _commandManager; }
-        }        
+        TypeReference ITypeReferences.CommandManager => _commandManager;
 
-        TypeReference ITypeReferences.EventHandler
-        {
-            get { return _eventHandler; }
-        }
+        TypeReference ITypeReferences.EventHandler => _eventHandler;
 
-        TypeReference ITypeReferences.FuncOfT
-        {
-            get { return _funcOfT; }
-        }
+        TypeReference ITypeReferences.FuncOfT => _funcOfT;
 
-        TypeReference ITypeReferences.ICommand
-        {
-            get { return _iCommand; }
-        }
+        TypeReference ITypeReferences.ICommand => _iCommand;
 
-        TypeReference ITypeReferences.Interlocked
-        {
-            get { return _interlocked; }
-        }
+        TypeReference ITypeReferences.Interlocked => _interlocked;
 
-        TypeReference ITypeReferences.Object
-        {
-            get { return _object; }
-        }        
+        TypeReference ITypeReferences.Object => _object;
 
-        TypeReference ITypeReferences.String
-        {
-            get { return _string; }
-        }
+        TypeReference ITypeReferences.String => _string;
 
-        TypeReference ITypeReferences.Void
-        {
-            get { return _void; }
-        }
+        TypeReference ITypeReferences.Void => _void;
 
-        TypeReference ITypeReferences.PredicateOfT
-        {
-            get { return _predicateOfT; }
-        }
+        TypeReference ITypeReferences.PredicateOfT => _predicateOfT;
 
-        TypeReference ITypeReferences.Delegate
-        {
-            get { return _delegate; }
-        }
+        TypeReference ITypeReferences.Delegate => _delegate;
 
         #region ITypeDefinitions Implementation
-        TypeDefinition ITypeDefinitions.Action
-        {
-            get { return _actionDef; }
-        }
+        TypeDefinition ITypeDefinitions.Action => _actionDef;
 
-        TypeDefinition ITypeDefinitions.ActionOfT
-        {
-            get { return _actionOfTDef; }
-        }
+        TypeDefinition ITypeDefinitions.ActionOfT => _actionOfTDef;
 
-        TypeDefinition ITypeDefinitions.ArgumentNullException
-        {
-            get { return _argumentNullExceptionDef; }
-        }
+        TypeDefinition ITypeDefinitions.ArgumentNullException => _argumentNullExceptionDef;
 
-        TypeDefinition ITypeDefinitions.CommandManager
-        {
-            get { return _commandManagerDef; }
-        }
+        TypeDefinition ITypeDefinitions.CommandManager => _commandManagerDef;
 
-        TypeDefinition ITypeDefinitions.EventHandler
-        {
-            get { return _eventHandlerDef; }
-        }
+        TypeDefinition ITypeDefinitions.EventHandler => _eventHandlerDef;
 
-        TypeDefinition ITypeDefinitions.FuncOfT
-        {
-            get { return _funcOfTDef; }
-        }
+        TypeDefinition ITypeDefinitions.FuncOfT => _funcOfTDef;
 
-        TypeDefinition ITypeDefinitions.ICommand
-        {
-            get { return _iCommandDef; }
-        }
+        TypeDefinition ITypeDefinitions.ICommand => _iCommandDef;
 
-        TypeDefinition ITypeDefinitions.Interlocked
-        {
-            get { return _interlockedDef; }
-        }
+        TypeDefinition ITypeDefinitions.Interlocked => _interlockedDef;
 
         TypeDefinition ITypeDefinitions.Object
         {
@@ -324,22 +252,20 @@ namespace Commander.Fody
         }
         #endregion ITypeDefinitions Implementation
 
-        public ModuleDefinition ModuleDefinition
-        {
-            get { return _moduleDefinition; }
-        }                
+        public ModuleDefinition ModuleDefinition { get; }
 
         public void ExecuteWinRT()
         {
             var targetFramework = ModuleDefinition.Assembly.GetTargetFramework();
             var assemblyResolver = ModuleDefinition.AssemblyResolver;
-            var systemRuntime = assemblyResolver.Resolve(AssemblyNameReference.Parse("System.Runtime"));
-            var systemRuntimeTypes = systemRuntime.MainModule.Types;
+            var systemRuntime = assemblyResolver.Resolve(new AssemblyNameReference("System.Runtime", null));
+            var systemRuntimeTypes = systemRuntime.MainModule.ExportedTypes.Select(t=>t.Resolve()).ToList();
 
             var systemDefinition = assemblyResolver.Resolve(AssemblyNameReference.Parse("System"));
-            var systemTypes = systemDefinition.MainModule.Types;
+            var systemTypes = systemDefinition.MainModule.ExportedTypes.Select(t=>t.Resolve()).ToList();
 
-            var objectDefinition = systemRuntimeTypes.First(x => x.Name == "Object");
+            var objectDefinition = systemRuntimeTypes.FirstOrDefault(x => x.Name == "Object");
+            
             
             _objectDef = objectDefinition;
             _eventHandlerDef = systemRuntimeTypes.First(x => x.Name == "EventHandler");
@@ -347,8 +273,11 @@ namespace Commander.Fody
             _delegateDef = systemRuntimeTypes.First(x => x.Name == "Delegate");
             _delegate = ModuleDefinition.ImportReference(_delegateDef);
 
-            _interlockedDef = systemRuntimeTypes.First(x => x.FullName == "System.Threading.Interlocked");
-            _interlocked = ModuleDefinition.ImportReference(_interlockedDef);
+            _interlockedDef = systemRuntimeTypes.FirstOrDefault(x => x.FullName == "System.Threading.Interlocked");
+            if (_interlockedDef != null)
+            {
+                _interlocked = ModuleDefinition.ImportReference(_interlockedDef);
+            }
 
             var actionDefinition = systemRuntimeTypes.FirstOrDefault(x => x.Name == "Action");
             if (actionDefinition == null)
@@ -409,7 +338,7 @@ namespace Commander.Fody
             _argumentNullExceptionDef = argumentNullException;
             _argumentNullException = ModuleDefinition.ImportReference(argumentNullException);
 
-            var systemObjectModelDef = assemblyResolver.Resolve(AssemblyNameReference.Parse("System.ObjectModel"));
+            var systemObjectModelDef = assemblyResolver.Resolve(new AssemblyNameReference("System.ObjectModel",null));
             var objectModelTypes  = systemObjectModelDef.MainModule.Types;
             var iCommandDefinition = objectModelTypes.FirstOrDefault(x => x.Name == "ICommand");
             if (iCommandDefinition == null)
@@ -464,7 +393,7 @@ namespace Commander.Fody
             return types;
         } 
 
-        private AssemblyDefinition GetPrimaryICommandSearchLocation(string targetFramework)
+        private AssemblyDefinition GetPrimaryICommandAssemblyDefinition(string targetFramework)
         {
             try
             {
@@ -477,11 +406,19 @@ namespace Commander.Fody
                 {
                     return ModuleDefinition.AssemblyResolver.Resolve(AssemblyNameReference.Parse("System"));
                 }
-                return ModuleDefinition.AssemblyResolver.Resolve(AssemblyNameReference.Parse("PresentationCore"));
+                
+                //if (targetFramework.Contains(""))
+                var presentationCoreAsmRef = ModuleDefinition.AssemblyReferences.FirstOrDefault(r=>r.Name == "PresentationCore");
+
+                
+                return ModuleDefinition.AssemblyResolver.Resolve(presentationCoreAsmRef ?? new AssemblyNameReference("PresentationCore",null));
             }
             catch (Exception exception)
             {
-                var message = string.Format(@"Could not resolve PresentationCore. Please ensure you are using .net 3.5 or higher.{0}Inner message:{1}.", Environment.NewLine, exception.Message);
+                var message =
+                    $@"Could not resolve the assembly which contains the ICommand implementation for target framework: {targetFramework}. Please ensure you are using .net 3.5 or higher.{
+                        Environment.NewLine
+                    }Inner message:{exception.Message}.";
                 message += " AssemblyResolver is: " + ModuleDefinition.AssemblyResolver.GetType().FullName;
                 throw new WeavingException(message);
             }

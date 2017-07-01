@@ -10,9 +10,9 @@ using System.Windows;
 [assembly: AssemblyTitle("WpfMvvmSample")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Hewlett-Packard Company")]
+[assembly: AssemblyCompany("Damian Reeves")]
 [assembly: AssemblyProduct("WpfMvvmSample")]
-[assembly: AssemblyCopyright("Copyright © Hewlett-Packard Company 2013")]
+[assembly: AssemblyCopyright("Copyright © Damian Reeves 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

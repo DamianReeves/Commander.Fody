@@ -8,9 +8,6 @@ namespace Commander.Fody
 {
     public class AttributeCleanerProcessor : IModuleProcessor
     {
-        private readonly ModuleDefinition _moduleDefinition;
-        private readonly IFodyLogger _logger;
-
         private readonly List<string> _propertyAttributeNames = new List<string>
         {
             "Commander.OnCommandAttribute",
@@ -19,24 +16,14 @@ namespace Commander.Fody
 
         public AttributeCleanerProcessor(ModuleDefinition moduleDefinition, IFodyLogger logger)
         {
-            _moduleDefinition = moduleDefinition;
-            _logger = logger;
+            ModuleDefinition = moduleDefinition;
+            Logger = logger;
         }
 
-        public IFodyLogger Logger
-        {
-            get { return _logger; }
-        }
+        public IFodyLogger Logger { get; }
 
-        public ModuleDefinition ModuleDefinition
-        {
-            get { return _moduleDefinition; }
-        }
-
-        public void Execute()
-        {
-            CleanAttributes();
-        }        
+        public ModuleDefinition ModuleDefinition { get; }
+        public void Execute() => CleanAttributes();
 
         void ProcessType(TypeDefinition type)
         {

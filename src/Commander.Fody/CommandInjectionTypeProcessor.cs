@@ -13,16 +13,13 @@ namespace Commander.Fody
     {
         // TODO: Eventually change this to be configurable
         private const string InitializerMethodName = "<Commander_Fody>InitializeCommands";
-        private readonly List<CommandData> _commands;
+
         public CommandInjectionTypeProcessor(TypeDefinition type, ModuleWeaver moduleWeaver) : base(type, moduleWeaver)
         {
-            _commands = Assets.Commands.Values.Where(cmd => cmd.DeclaringType.FullName == type.FullName).ToList();
+            Commands = Assets.Commands.Values.Where(cmd => cmd.DeclaringType.FullName == type.FullName).ToList();
         }        
 
-        public List<CommandData> Commands
-        {
-            get { return _commands; }
-        }
+        public List<CommandData> Commands { get; }
 
         public override void Execute()
         {
@@ -41,8 +38,7 @@ namespace Commander.Fody
             {
                 try
                 {
-                    PropertyDefinition propertyDefinition;
-                    if (Type.TryAddCommandProperty(commandTypeReference, commandData.CommandName, out propertyDefinition))
+                    if (Type.TryAddCommandProperty(commandTypeReference, commandData.CommandName, out PropertyDefinition propertyDefinition))
                     {
                         Assets.Log.Info("Successfully added a property for command: {0}.", commandData.CommandName);
                     }
@@ -341,15 +337,13 @@ namespace Commander.Fody
             if (method.Parameters.Count > 1)
             {
                 throw new WeavingException(
-                    string.Format("Cannot generate command initialization for 'CanExecute' method {0}, because the method has too many parameters."
-                    , method));
+                    $"Cannot generate command initialization for 'CanExecute' method {method}, because the method has too many parameters.");
             }
 
             if (targetConstructor.Parameters.Count != 2)
             {
                 throw new WeavingException(
-                    string.Format("Cannot generate command initialization for 'CanExecute' method {0}, because the method has the wrong signature."
-                    , method));
+                    $"Cannot generate command initialization for 'CanExecute' method {method}, because the method has the wrong signature.");
             }
 
             var targetParameter = targetConstructor.Parameters[1];
@@ -362,8 +356,7 @@ namespace Commander.Fody
             if (targetParameter.ParameterType.Name != "Func`1")
             {
                 throw new WeavingException(
-                    string.Format("Cannot generate command initialization for 'CanExecute' method {0}, because the method has the wrong signature."
-                    , method));
+                    $"Cannot generate command initialization for 'CanExecute' method {method}, because the method has the wrong signature.");
             }
            
             // Action()

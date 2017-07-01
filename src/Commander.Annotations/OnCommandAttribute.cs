@@ -11,27 +11,18 @@ namespace Commander
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class OnCommandAttribute : Attribute
     {
-        private readonly string _commandName;
-
         /// <summary>
         /// Creates the attribute with a command with the given name.
         /// </summary>
         /// <param name="commandName"></param>
         public OnCommandAttribute(string commandName)
         {
-            if (commandName == null)
-            {
-                throw new ArgumentNullException("commandName");
-            }
-            _commandName = commandName;
+            CommandName = commandName ?? throw new ArgumentNullException(nameof(commandName));
         }
 
         /// <summary>
         /// Gets the name of the command.
         /// </summary>
-        public string CommandName
-        {
-            get { return _commandName; }
-        }
+        public string CommandName { get; }
     }
 }

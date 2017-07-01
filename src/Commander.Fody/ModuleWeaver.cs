@@ -42,7 +42,7 @@ namespace Commander.Fody
 
         public void Execute()
         {
-            LogWarning(string.Format("AssemblyFilePath is {0}", AssemblyFilePath));
+            LogWarning($"AssemblyFilePath is {AssemblyFilePath}");
             var container = CreateContainer();
             ConfigureContainer(container);
             Setup();

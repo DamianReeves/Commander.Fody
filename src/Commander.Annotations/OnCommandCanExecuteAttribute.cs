@@ -8,27 +8,18 @@ namespace Commander
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class OnCommandCanExecuteAttribute : Attribute
     {
-        private readonly string _commandName;
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="commandName"></param>
         public OnCommandCanExecuteAttribute(string commandName)
         {
-            if (commandName == null)
-            {
-                throw new ArgumentNullException("commandName");
-            }
-            _commandName = commandName;
+            CommandName = commandName ?? throw new ArgumentNullException(nameof(commandName));
         }
 
         /// <summary>
         /// Gets the command name that is associated.
         /// </summary>
-        public string CommandName
-        {
-            get { return _commandName; }
-        }
+        public string CommandName { get; }
     }
 }

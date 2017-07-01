@@ -8,45 +8,27 @@ namespace Commander.Fody
 {
     public abstract class ModuleProcessorBase : IModuleProcessor
     {
-        [NotNull] private readonly ModuleWeaver _moduleWeaver;
-        [NotNull]private readonly ModuleWeaverSettings _settings;
-        [NotNull] private readonly Assets _assets;
-        [NotNull] private readonly ModuleDefinition _moduleDefinition;
-
         protected ModuleProcessorBase([NotNull] ModuleWeaver moduleWeaver)
         {
-            if (moduleWeaver == null)
-            {
-                throw new ArgumentNullException("moduleWeaver");
-            }
-
-            _moduleWeaver = moduleWeaver;
-            _assets = _moduleWeaver.Assets;
-            _moduleDefinition = _moduleWeaver.ModuleDefinition;
-            _settings = _moduleWeaver.Settings;
+            ModuleWeaver = moduleWeaver ?? throw new ArgumentNullException(nameof(moduleWeaver));
+            Assets = ModuleWeaver.Assets;
+            ModuleDefinition = ModuleWeaver.ModuleDefinition;
+            Settings = ModuleWeaver.Settings;
         }
 
-        public Assets Assets
-        {
-            get { return _assets; }
-        }
+        [NotNull]
+        public Assets Assets { get; }
 
-        public ModuleWeaverSettings Settings
-        {
-            get { return _settings; }
-        }
+        [NotNull]
+        public ModuleWeaverSettings Settings { get; }
 
-        public ModuleWeaver ModuleWeaver { get { return _moduleWeaver; } }
+        [NotNull]
+        public ModuleWeaver ModuleWeaver { get; }
 
-        public ModuleDefinition ModuleDefinition
-        {
-            get { return _moduleDefinition; }
-        }
+        [NotNull]
+        public ModuleDefinition ModuleDefinition { get; }
 
-        public IFodyLogger Logger
-        {
-            get { return ModuleWeaver; }
-        }
+        public IFodyLogger Logger => ModuleWeaver;
 
         public abstract void Execute();        
     }

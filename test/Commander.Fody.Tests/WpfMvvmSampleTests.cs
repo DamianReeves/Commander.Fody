@@ -16,7 +16,7 @@ namespace Tests
     public class WpfMvvmSampleTests : BaseTaskTests, IClassFixture<WeaverFixture>
     {
         public WpfMvvmSampleTests(WeaverFixture weaverFixture)
-            : base(weaverFixture, "WpfMvvmSample")
+            : base(weaverFixture, "WpfMvvmSample","net40",".exe")
         {
             
         }

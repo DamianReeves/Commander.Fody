@@ -20,16 +20,8 @@ namespace Commander.Fody
         public NestedCommandInjectionTypeProcessor([NotNull] CommandData command,
             [NotNull] MethodDefinition initializeMethod, TypeDefinition type, ModuleWeaver moduleWeaver) : base(type, moduleWeaver)
         {
-            if (command == null)
-            {
-                throw new ArgumentNullException("command");
-            }
-            if (initializeMethod == null)
-            {
-                throw new ArgumentNullException("initializeMethod");
-            }
-            _command = command;
-            _initializeMethod = initializeMethod;
+            _command = command ?? throw new ArgumentNullException("command");
+            _initializeMethod = initializeMethod ?? throw new ArgumentNullException("initializeMethod");
         }
 
         public CommandData Command

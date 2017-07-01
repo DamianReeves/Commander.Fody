@@ -13,19 +13,22 @@ public class WeaverHelper
     public Assembly Assembly;
 
 
-    public WeaverHelper(string assemblyName, string targetFramework = "net462")
+    public WeaverHelper(string assemblyName, string targetFramework = null, string extension = null)
     {
+        targetFramework = targetFramework ?? "net462";
+        extension = extension ?? ".dll";
         BeforeAssemblyPath = Path.GetFullPath(
             Path.Combine(
                 TestContext.CurrentContext.TestDirectory, 
                 $@"..\..\..\..\..\TestAssemblyBin\{targetFramework}", 
-                assemblyName + ".dll")
+                assemblyName + extension)
             );
 
 #if (RELEASE)
         BeforeAssemblyPath = BeforeAssemblyPath.Replace("Debug", "Release");
-#endif
-        AfterAssemblyPath = BeforeAssemblyPath.Replace(".dll", "2.dll");
+#endif        
+        AfterAssemblyPath = BeforeAssemblyPath.Replace(extension, "2"+extension);
+        
         File.Copy(BeforeAssemblyPath, AfterAssemblyPath, true);
 
         var assemblyResolver = new TestAssemblyResolver(targetFramework);

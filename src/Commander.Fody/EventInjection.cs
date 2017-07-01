@@ -34,9 +34,7 @@ namespace Commander.Fody
                 var field = targetType.Fields.FirstOrDefault(fld => fld.Name == eventName);
                 if (field == null)
                 {
-                    assets.Log.LogInfo(string.Format("Adding field {0} to {1} in CreateAddEventMethod.", 
-                        eventName,
-                        targetType.FullName));
+                    assets.Log.LogInfo($"Adding field {eventName} to {targetType.FullName} in CreateAddEventMethod.");
                     field = targetType.AddField(eventType, eventName);
                 }
                 Instruction loopStart;
@@ -101,17 +99,14 @@ namespace Commander.Fody
                 var field = targetType.Fields.FirstOrDefault(fld => fld.Name == eventName);
                 if (field == null)
                 {
-                    assets.Log.LogInfo(string.Format("Adding field {0} to {1} in CreateRemoveEventMethod.",
-                        eventName,
-                        targetType.FullName));
+                    assets.Log.LogInfo($"Adding field {eventName} to {targetType.FullName} in CreateRemoveEventMethod.");
                     field = targetType.AddField(eventType, eventName);
                 }
-                Instruction loopStart;
                 il.Append(il.Create(OpCodes.Nop));
                 il.Append(il.Create(OpCodes.Ldarg_0));
                 il.Append(il.Create(OpCodes.Ldfld, field));
                 il.Append(il.Create(OpCodes.Stloc_0));
-                loopStart = il.Create(OpCodes.Nop);
+                var loopStart = il.Create(OpCodes.Nop);
                 il.Append(loopStart);
                 il.Append(il.Create(OpCodes.Ldloc_0));
                 il.Append(il.Create(OpCodes.Stloc_1));

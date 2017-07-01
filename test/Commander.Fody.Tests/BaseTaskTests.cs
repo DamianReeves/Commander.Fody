@@ -8,11 +8,11 @@ public abstract class BaseTaskTests
     public Assembly Assembly;
     private WeaverHelper weaverHelper;
 
-    protected BaseTaskTests(WeaverFixture weaverFixture, string assemblyName, string targetFrameork = null)
+    protected BaseTaskTests(WeaverFixture weaverFixture, string assemblyName, string targetFrameork = null, string extension = null)
     {
-        targetFrameork = targetFrameork ?? "net462";
         weaverFixture.SetAssemblyName(assemblyName);
-        weaverFixture.SetTargetFramework(targetFrameork);
+        weaverFixture.SetTargetFramework(targetFrameork ?? "net462");
+        weaverFixture.SetExtension(extension??".dll");
         weaverHelper = weaverFixture.GetWeaverHelper();
         Assembly = weaverFixture.GetWeaverHelper().Assembly;
     }
