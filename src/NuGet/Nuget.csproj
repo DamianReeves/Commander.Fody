@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net462</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PepitaPackage" Version="1.21.4" />
+  </ItemGroup>
+  <Target Name="NuGetBuild" AfterTargets="AfterBuild">
+    <ItemGroup>
+      <FilesToDelete Include="$(SolutionDir)NuGetBuild\**\*.*" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
+    <MakeDir Directories="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)src\Commander.Annotations\bin\$(Configuration)\netstandard1.4\Commander.Annotations.dll" DestinationFolder="$(SolutionDir)NuGetBuild\lib\netstandard1.0" />
+    <Copy SourceFiles="$(SolutionDir)src\Commander.Annotations\bin\$(Configuration)\netstandard1.4\Commander.Annotations.xml" DestinationFolder="$(SolutionDir)NuGetBuild\lib\netstandard1.0" />
+    <Copy SourceFiles="$(SolutionDir)src\NuGet\Commander.Fody.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(ProjectDir)install.ps" DestinationFiles="$(SolutionDir)NuGetBuild\tools\install.ps1" />
+    <Copy SourceFiles="$(ProjectDir)uninstall.ps" DestinationFiles="$(SolutionDir)NuGetBuild\tools\uninstall.ps1" />
+    <Copy SourceFiles="$(SolutionDir)src\Commander.Fody\bin\$(Configuration)\net452\Commander.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)src\Commander.Fody\bin\$(Configuration)\net452\Commander.Fody.pdb" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)src\Commander.Fody\bin\$(Configuration)\net452\Commander.Fody.dll" />
+  </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\Commander.Fody\Commander.Fody.csproj" />
+    <ProjectReference Include="..\Commander.Annotations\Commander.Annotations.csproj" />
+  </ItemGroup>
+</Project>

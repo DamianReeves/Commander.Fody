@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net452</TargetFramework>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="Microsoft.CSharp" />
+		<PackageReference Include="FodyCecil" Version="2.1.0" />
+		<Reference Include="System.Xml" />
+		<Reference Include="System.Xml.Linq" />
+		<Compile Include="..\..\CommonAssemblyInfo.cs" />
+	</ItemGroup>
+</Project>
