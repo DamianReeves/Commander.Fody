@@ -7,7 +7,7 @@ public class Net4WeavingTaskTests : BaseTaskTests, IClassFixture<WeaverFixture>
 {
 
     public Net4WeavingTaskTests(WeaverFixture weaverFixture)
-        : base(weaverFixture, @"TestAssemblies\AssemblyToProcess\AssemblyToProcess.csproj", Console.WriteLine)
+        : base(weaverFixture, @"AssemblyToProcess")
     {
     }    
 

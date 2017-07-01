@@ -6,25 +6,22 @@ using Xunit;
 public abstract class BaseTaskTests
 {
     public Assembly Assembly;
+    private WeaverHelper weaverHelper;
 
-    protected BaseTaskTests(WeaverFixture weaverFixture, string projectPath, Action<ModuleWeaver> configureAction = null)
+    protected BaseTaskTests(WeaverFixture weaverFixture, string assemblyName, string targetFrameork = null)
     {
-#if (!DEBUG)
-
-            projectPath = projectPath.Replace("Debug", "Release");
-#endif
-        weaverFixture.SetProjectPath(projectPath);
-        weaverFixture.ConfigureWeaver(configureAction);
+        targetFrameork = targetFrameork ?? "net462";
+        weaverFixture.SetAssemblyName(assemblyName);
+        weaverFixture.SetTargetFramework(targetFrameork);
+        weaverHelper = weaverFixture.GetWeaverHelper();
         Assembly = weaverFixture.GetWeaverHelper().Assembly;
     }
 
 
-#if(DEBUG)
     [Fact]
     public void PeVerify()
     {
-        Verifier.Verify(Assembly.CodeBase.Remove(0, 8));
+        Verifier.Verify(weaverHelper.BeforeAssemblyPath, weaverHelper.AfterAssemblyPath);
     }
-#endif
 
 }

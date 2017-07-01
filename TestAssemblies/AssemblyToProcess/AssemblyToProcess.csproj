@@ -10,7 +10,7 @@
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PropertyChanged\PropertyChanged.csproj" />
+    
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

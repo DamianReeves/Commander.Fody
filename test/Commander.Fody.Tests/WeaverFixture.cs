@@ -10,40 +10,47 @@ using Mono.Cecil;
 public class WeaverFixture
 {
     private readonly object _lock = new object();
-    private string _projectPath;
-    private Action<ModuleWeaver> _configure;
+    private string _assemblyName;
+    private string _targetFramework;
     private WeaverHelper _weaverHelper;
 
-    public WeaverFixture SetProjectPath(string projectPath)
+
+    public WeaverFixture SetAssemblyName(string assemblyName)
     {
-        if (projectPath == null)
+        if (assemblyName == null)
         {
-            throw new ArgumentNullException(nameof(projectPath));
+            throw new ArgumentNullException(nameof(assemblyName));
         }
 
         lock (_lock)
         {
-            if(!string.Equals(projectPath, _projectPath, StringComparison.OrdinalIgnoreCase))
+            if(!string.Equals(assemblyName, _assemblyName, StringComparison.OrdinalIgnoreCase))
             {
-                _projectPath = projectPath;
+                _assemblyName = assemblyName;
                 _weaverHelper = null;
             }
             return this;
         }
     }
 
-    public WeaverFixture ConfigureWeaver(Action<ModuleWeaver> configure)
+    public WeaverFixture SetTargetFramework(string targetFramework)
     {
+        if (targetFramework == null)
+        {
+            throw new ArgumentNullException(nameof(targetFramework));
+        }
+
         lock (_lock)
         {
-            if(!Object.Equals(configure, _configure))
+            if (!string.Equals(targetFramework, _targetFramework, StringComparison.OrdinalIgnoreCase))
             {
-                _configure = configure;
+                _targetFramework = targetFramework;
                 _weaverHelper = null;
             }
             return this;
         }
     }
+
 
     public WeaverHelper GetWeaverHelper()
     {
@@ -51,7 +58,7 @@ public class WeaverFixture
         {
             if(_weaverHelper == null)
             {
-                _weaverHelper = new WeaverHelper(_projectPath, _configure);
+                _weaverHelper = new WeaverHelper(_assemblyName, _targetFramework);
             }
             return _weaverHelper;
         }

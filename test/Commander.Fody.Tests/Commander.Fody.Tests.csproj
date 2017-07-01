@@ -1,20 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
-  </PropertyGroup>
+		<PropertyGroup>
+				<TargetFramework>net462</TargetFramework>
+		</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.2" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-    <PackageReference Include="NSubstitute" Version="2.0.3" />
-    <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-  </ItemGroup>
+		<ItemGroup>
+				<PackageReference Include="FluentAssertions" Version="4.19.2" />
+				<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+				<PackageReference Include="NSubstitute" Version="2.0.3" />
+				<PackageReference Include="xunit" Version="2.2.0" />
+				<PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+		</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Commander.Fody\Commander.Fody.csproj" />
-  </ItemGroup>
+		<ItemGroup>
+				<ProjectReference Include="..\..\src\Commander.Fody\Commander.Fody.csproj" />
+		</ItemGroup>
 
+		<ItemGroup>
+				<Reference Include="Microsoft.Build" />
+				<Reference Include="Microsoft.Build.Framework" />
+				<Reference Include="Microsoft.Build.Tasks.v4.0" />
+				<Reference Include="Microsoft.Build.Utilities.v4.0" />
+				<Reference Include="Microsoft.CSharp" />
+		</ItemGroup>
 </Project>
