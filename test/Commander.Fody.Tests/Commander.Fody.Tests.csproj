@@ -1,13 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 		<PropertyGroup>
 				<TargetFramework>net462</TargetFramework>
 		</PropertyGroup>
 
 		<ItemGroup>
-				<PackageReference Include="FluentAssertions" Version="4.19.2" />
+				<PackageReference Include="FluentAssertions" Version="4.19.3" />
+				<PackageReference Include="FsCheck.Nunit" Version="2.9.0" />
 				<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
 				<PackageReference Include="NSubstitute" Version="2.0.3" />
+				<PackageReference Include="NUnit" Version="3.7.1" />
+				<PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" />
+				<PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
 				<PackageReference Include="xunit" Version="2.2.0" />
 				<PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
 		</ItemGroup>
@@ -22,5 +26,9 @@
 				<Reference Include="Microsoft.Build.Tasks.v4.0" />
 				<Reference Include="Microsoft.Build.Utilities.v4.0" />
 				<Reference Include="Microsoft.CSharp" />
+		</ItemGroup>
+
+		<ItemGroup>
+		  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
 		</ItemGroup>
 </Project>
